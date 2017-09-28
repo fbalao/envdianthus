@@ -62,6 +62,7 @@ proj4string(cooDbroterigbif) <- crs.geo
 map<-plot(gmap(e, type = "satellite"))
 points<-points(Mercator(cooDbroterigbifdata), col = cooDbroterigbifdata$ploidy, pch=20, cex = 1.5)
 
+saveRDS(cooDbroterigbifdata,file = "cooDbroterigbifdata.RDS")
 
 #Extraccion de valores de variables predictoras
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
