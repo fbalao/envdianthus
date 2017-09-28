@@ -100,3 +100,4 @@ ecospat.grid.clim.dyn2<-function (glob, glob1, sp, R, th.sp = 0, th.env = 0, geo
   }
   return(l)
 }
+<environment: namespace:ecospat>
