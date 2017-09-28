@@ -357,44 +357,23 @@ points(Mercator(dobackgrounddat.c), col = 'blue', pch=20)
 
 #===============DODECAPLOID=============#
 
+#===============PCA background=============#
+
 todo <- rbind (presvalsdata, as.data.frame(backgrounddat.c), as.data.frame(dibackgrounddat.c), as.data.frame(tebackgrounddat.c), as.data.frame(hebackgrounddat.c), as.data.frame(dobackgrounddat.c))
 
 todo.pca <- todo[,-c(1:3)]
 todo.pca <- cbind (todo.pca,1)
 correlations2 <- corSelect (todo.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
-selected2 <- correlations$selected.var.cols 
-presvals.pca.2 <- presvals.pca[,c(selected)]
+selected2 <- correlations2$selected.var.cols 
+todo.pca.2 <- todo.pca[,c(selected)]
 
+todoploidy <- todo$ploidy
 
-
-column <- c(c(rep(1,28),rep(0,649)))
-todo1 <- cbind (todo, column)
-correlationsbackground <- corSelect (todo1, var.cols = 4:47, sp.cols = 48)
-selectedbackground <- correlationsbackground$selected.var.cols
-todo.c <- todo[,c(selectedbackground)]
-rem<-findCorrelation(cor(todo[,-c(1,2,3)]), cutoff = .80, verbose = F, names=T)
-
-m <- as.data.frame (rep("background",235))
-n <- as.data.frame (rep("2xbackground",99))
-p <- as.data.frame (rep("4xbackground",187))
-q <- as.data.frame (rep("6xbackground",95))
-r <- as.data.frame (rep("12xbackground",33))
-names(m)<-"ploidy"
-names(n)<-"ploidy"
-names(p)<-"ploidy"
-names(q)<-"ploidy"
-names(r)<-"ploidy"
-x <- rbind(m,n,p,q,r)
-column2 <- rbind(ploidy,x)
-column2 <- column2$ploidy
-colum2 <- factor (column2, levels = c("2x", "4x", "6x", "12x", "background", "2xbackground", "4xbackground", "6xbackground", "12xbackground"), ordered = TRUE)
-
-
-pcaback <- prcomp(todo.c, scale. = TRUE, retx = T)
+pcaback <- prcomp(todo.pca.2, scale. = TRUE, retx = T)
 ggbiplot(pcaback, obs.scale = 1,var.scale = 1,
-         groups = column2, ellipse = TRUE, circle = TRUE, alpha =  1) +
+         groups = todoploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
-  geom_point(aes(colour=colum2), size = 2) +
+  geom_point(aes(colour=todoploidy), size = 2) +
   theme(legend.direction = 'vertical', legend.position = 'right')
 
 
