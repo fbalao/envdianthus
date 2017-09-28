@@ -13,10 +13,10 @@ library(ecospat)
 
 
 #Datos de GBIF
-Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=5000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dinoxgbif<-occ_search(scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=5000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dhinoxgbif<-occ_search(scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=5000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dvalengbif<-occ_search(scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=5000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dinoxgbif<-occ_search(scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dhinoxgbif<-occ_search(scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dvalengbif<-occ_search(scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
 todo<-rbind(Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
 todo$name<-"Dianthus broteri"
 gbifmap(todo, mapdatabase = "world", region = "Spain")
