@@ -1,29 +1,29 @@
-# library (dismo)
-library (raster)
-# library (rJava)
-# library (rgdal)
+  library (dismo)
+ library (raster)
+  library (rJava)
+  library (rgdal)
 library (rgeos)
-# library (rgbif)
-# library (rjson)
+library (rgbif)
+library (rjson)
 library (gtools)
-# library (maps)
-# library (ggmap)
-# library (rgeos)
-library (fuzzySim)
-# library (ade4)
-library (pcaMethods)
-library (ecospat)
-library (sp)
-library (GSIF)
-library (caret)
-# library (RCurl)
-# library (gdalUtils)
-# library (plotKML)
-# library (XML)
-# library (lattice)
-# library (aqp)
-# library (soiltexture)
-library (ggbiplot)
+  library (maps)
+  library (ggmap)
+  library (rgeos)
+ library (fuzzySim)
+  library (ade4)
+ library (pcaMethods)
+ library (ecospat)
+ library (sp)
+ library (GSIF)
+ library (caret)
+  library (RCurl)
+  library (gdalUtils)
+  library (plotKML)
+  library (XML)
+  library (lattice)
+  library (aqp)
+  library (soiltexture)
+ library (ggbiplot)
 
 
 #dataset de poblaciones con coordenadas
@@ -129,33 +129,37 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #background data (merged)
-mergedtable.c <- read.delim2("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/ECOSPAT/mergedtable.csv",sep = ";")
+presvals2 <- presvals[,-46]
+coordinates(presvals2)<-coordinates(dbroteri)
+proj4string(presvals2) <- crs.geo 
 
-coordinates(mergedtable.c)<- ~long+ lat
-proj4string(mergedtable.c) <- crs.geo 
-
-set.seed(100)
-mask <- raster(mergedtable.c)
-res(mask) <- 0.08333333
-x <- circles(mergedtable.c, d=50000, lonlat=TRUE)
+set.seed(110)
+mask <- raster(presvals2)
+res(mask) <- 0.008333333
+x <- circles(presvals2, d=75000, lonlat=TRUE)
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 500, type='random', iter=25)
+samp <- spsample(pol, 500, type='random', iter=2500)
+extent(mask)<-extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
 cells <- unique(cells)
 length(cells)
 xy <- xyFromCell(mask, cells)
 xy <- as.data.frame(xy)
-xy <- xy[-6,]
 coordinates(xy)<- ~x+ y
 proj4string(xy) <- crs.geo
+
+plot(pol)
+points(xy)
+
+
 
 ploidy <- as.data.frame (ploidy)
 plot(gmap(e, type = "satellite"))
 points(Mercator(xy), col = 'blue', pch=20)
 mycols <- c("black", "green", "red", "white")
 palette(mycols)
-points(Mercator(mergedtable.c), col=mergedtable.c$ploidy, pch=20, cex=1)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 backgroundclim<-extract(variables,xy)
 backgroundsoil<-extract.list(xy, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
@@ -167,7 +171,7 @@ backgrounddat.c<-backgrounddat.c[,-c(42:44)]
 colnames(backgrounddat.c)[48]<-"AWC"
 backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
 backgrounddat.c <- backgrounddat.c[,-48]
-colnames(backgrounddat.c)<-colnames(as.data.frame(mergedtable.c))
+colnames(backgrounddat.c)<-colnames(as.data.frame(presvals2))
 
 
 #background data (x ploidy)
@@ -214,7 +218,7 @@ dibackgrounddat.c<-dibackgrounddat.c[,-c(42:44)]
 colnames(dibackgrounddat.c)[48]<-"AWC"
 dibackgrounddat.c <- dibackgrounddat.c[,c(1:41,48,42:47)]
 dibackgrounddat.c <- dibackgrounddat.c[,-48]
-colnames(dibackgrounddat.c)<-colnames(as.data.frame(mergedtable.c))
+colnames(dibackgrounddat.c)<-colnames(as.data.frame(presvals2))
 
 maskte <- raster(tetraploid)
 res(maskte) <- 0.08333333
@@ -241,7 +245,7 @@ tebackgrounddat.c<-tebackgrounddat.c[,-c(42:44)]
 colnames(tebackgrounddat.c)[48]<-"AWC"
 tebackgrounddat.c <- tebackgrounddat.c[,c(1:41,48,42:47)]
 tebackgrounddat.c <- tebackgrounddat.c[,-48]
-colnames(tebackgrounddat.c)<-colnames(as.data.frame(mergedtable.c))
+colnames(tebackgrounddat.c)<-colnames(as.data.frame(presvals2))
 
 maskhe <- raster(hexaploid)
 res(maskhe) <- 0.08333333
@@ -268,7 +272,7 @@ hebackgrounddat.c<-hebackgrounddat.c[,-c(42:44)]
 colnames(hebackgrounddat.c)[48]<-"AWC"
 hebackgrounddat.c <- hebackgrounddat.c[,c(1:41,48,42:47)]
 hebackgrounddat.c <- hebackgrounddat.c[,-48]
-colnames(hebackgrounddat.c)<-colnames(as.data.frame(mergedtable.c))
+colnames(hebackgrounddat.c)<-colnames(as.data.frame(presvals2))
 
 maskdo <- raster(dodecaploid)
 res(maskdo) <- 0.08333333
@@ -295,9 +299,9 @@ dobackgrounddat.c<-dobackgrounddat.c[,-c(42:44)]
 colnames(dobackgrounddat.c)[48]<-"AWC"
 dobackgrounddat.c <- dobackgrounddat.c[,c(1:41,48,42:47)]
 dobackgrounddat.c <- dobackgrounddat.c[,-48]
-colnames(dobackgrounddat.c)<-colnames(as.data.frame(mergedtable.c))
+colnames(dobackgrounddat.c)<-colnames(as.data.frame(presvals2))
 
-todo <- rbind (as.data.frame(mergedtable.c), backgrounddat.c, dibackgrounddat.c, tebackgrounddat.c, hebackgrounddat.c, dobackgrounddat.c)
+todo <- rbind (as.data.frame(presvals2), backgrounddat.c, dibackgrounddat.c, tebackgrounddat.c, hebackgrounddat.c, dobackgrounddat.c)
 
 column <- c(c(rep(1,28),rep(0,649)))
 todo1 <- cbind (todo, column)
@@ -340,7 +344,7 @@ row.bacte<-which(todo[,1] == "tebackground")
 row.bache<-which(todo[,1] == "hebackground")
 row.bacdo<-which(todo[,1] == "dobackground")
 
-scores.clim<- pca.cal$li[(nrow(as.data.frame(mergedtable.c))+1):nrow(todo.c),] 
+scores.clim<- pca.cal$li[(nrow(as.data.frame(presvals2))+1):nrow(todo.c),] 
 scores.di<- pca.cal$li[row.di,]		
 scores.te<- pca.cal$li[row.te,]	
 scores.he<- pca.cal$li[row.he,]	
