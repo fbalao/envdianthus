@@ -136,10 +136,10 @@ proj4string(presvals2) <- crs.geo
 set.seed(110)
 mask <- raster(presvals2)
 res(mask) <- 0.008333333
-x <- circles(presvals2, d=75000, lonlat=TRUE)
+x <- circles(presvals2, d=25000, lonlat=TRUE)
 #Se podría hacer un clip de los poligonos y el continente para que no salgan puntos en el mar , solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 100, type='random', iter=2500)
+samp <- spsample(pol, 500, type='random', iter=2500)
 extent(mask)<-extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -210,9 +210,9 @@ proj4string(dodecaploid) <- crs.geo
 #===============DIPLOID=============#
 maskdi <- raster(diploid)
 res(maskdi) <- 0.008333333
-xdi <- circles(diploid, d=75000, lonlat=TRUE)
+xdi <- circles(diploid, d=25000, lonlat=TRUE)
 poldi <- gUnaryUnion(xdi@polygons)
-sampdi <- spsample(poldi, 30, type='random', iter=2500)
+sampdi <- spsample(poldi, 100, type='random', iter=2500)
 extent(maskdi)<-extent(poldi)
 cellsdi <- cellFromXY(maskdi, sampdi)
 length(cellsdi)
@@ -249,9 +249,9 @@ points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 maskte <- raster(tetraploid)
 res(maskte) <- 0.008333333
-xte <- circles(tetraploid, d=75000, lonlat=TRUE)
+xte <- circles(tetraploid, d=25000, lonlat=TRUE)
 polte <- gUnaryUnion(xte@polygons)
-sampte <- spsample(polte, 30, type='random', iter=2500)
+sampte <- spsample(polte, 100, type='random', iter=2500)
 extent(maskte)<-extent(polte)
 cellste <- cellFromXY(maskte, sampte)
 length(cellste)
@@ -286,9 +286,9 @@ points(Mercator(tebackgrounddat.c), col = 'blue', pch=20)
 
 maskhe <- raster(hexaploid)
 res(maskhe) <- 0.008333333
-xhe <- circles(hexaploid, d=75000, lonlat=TRUE)
+xhe <- circles(hexaploid, d=25000, lonlat=TRUE)
 polhe <- gUnaryUnion(xhe@polygons)
-samphe <- spsample(polhe, 30, type='random', iher=2500)
+samphe <- spsample(polhe, 100, type='random', iher=2500)
 extent(maskhe)<-extent(polhe)
 cellshe <- cellFromXY(maskhe, samphe)
 length(cellshe)
@@ -324,9 +324,9 @@ points(Mercator(hebackgrounddat.c), col = 'blue', pch=20)
 
 maskdo <- raster(dodecaploid)
 res(maskdo) <- 0.008333333
-xdo <- circles(dodecaploid, d=75000, lonlat=TRUE)
+xdo <- circles(dodecaploid, d=25000, lonlat=TRUE)
 poldo <- gUnaryUnion(xdo@polygons)
-sampdo <- spsample(poldo, 30, type='random', idor=2500)
+sampdo <- spsample(poldo, 100, type='random', idor=2500)
 extent(maskdo)<-extent(poldo)
 cellsdo <- cellFromXY(maskdo, sampdo)
 length(cellsdo)
@@ -365,7 +365,7 @@ todo.pca <- todo[,-c(1:3)]
 todo.pca <- cbind (todo.pca,1)
 correlations2 <- corSelect (todo.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
 selected2 <- correlations2$selected.var.cols 
-todo.pca.2 <- todo.pca[,c(selected)]
+todo.pca.2 <- todo.pca[,c(selected2)]
 
 todoploidy <- todo$ploidy
 
@@ -377,39 +377,41 @@ ggbiplot(pcaback, obs.scale = 1,var.scale = 1,
   theme(legend.direction = 'vertical', legend.position = 'right')
 
 
-#ECOSPAT
-row.di<-which(todo[,1] == "2x")
-row.te<-which(todo[,1] == "4x")
-row.he<-which(todo[,1] == "6x")
-row.do<-which(todo[,1] == "12x")
-row.bacdi<-which(todo[,1] == "dibackground") 
-row.bacte<-which(todo[,1] == "tebackground")
-row.bache<-which(todo[,1] == "hebackground")
-row.bacdo<-which(todo[,1] == "dobackground")
+#===============ECOSPAT=============#
 
-scores.clim<- pca.cal$li[(nrow(as.data.frame(presvals2))+1):nrow(todo.c),] 
-scores.di<- pca.cal$li[row.di,]		
-scores.te<- pca.cal$li[row.te,]	
-scores.he<- pca.cal$li[row.he,]	
-scores.do<- pca.cal$li[row.do,]	
-scores.bacdi<- pca.cal$li[row.bacdi,]					
-scores.bacte<- pca.cal$li[row.bacte,]	
-scores.bache<- pca.cal$li[row.bache,]	
-scores.bacdo<- pca.cal$li[row.bacdo,]	
+row.di<-which(todo[,3] == "2x")
+row.te<-which(todo[,3] == "4x")
+row.he<-which(todo[,3] == "6x")
+row.do<-which(todo[,3] == "12x")
+row.back<-which(todo[,3] == "background") 
+row.bacdi<-which(todo[,3] == "dibackground") 
+row.bacte<-which(todo[,3] == "tebackground")
+row.bache<-which(todo[,3] == "hebackground")
+row.bacdo<-which(todo[,3] == "dobackground")
 
-zdi<- ecospat.grid.clim.dyn(scores.clim, scores.bacdi, scores.di,R=100)
-zte<- ecospat.grid.clim.dyn(scores.clim, scores.bacte, scores.te,R=100)
-zhe<- ecospat.grid.clim.dyn(scores.clim, scores.bache, scores.he,R=100)
-zdo<- ecospat.grid.clim.dyn(scores.clim, scores.bacdo, scores.do,R=100)
+scores.clim<- pcaback$x[row.back,1:2] 
+scores.di<- pcaback$x[row.di,1:2]		
+scores.te<- pcaback$x[row.te,1:2]	
+scores.he<- pcaback$x[row.he,1:2]	
+scores.do<- pcaback$x[row.do,1:2]	
+scores.bacdi<- pcaback$x[row.bacdi,1:2]					
+scores.bacte<- pcaback$x[row.bacte,1:2]	
+scores.bache<- pcaback$x[row.bache,1:2]	
+scores.bacdo<- pcaback$x[row.bacdo,1:2]	
+
+zdi<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdi, scores.di, R=100, th.sp = 0, th.env = 0)
+zte<- ecospat.grid.clim.dyn2(scores.clim, scores.bacte, scores.te, R=100, th.sp = 0, th.env = 0)
+zhe<- ecospat.grid.clim.dyn2(scores.clim, scores.bache, scores.he, R=100, th.sp = 0, th.env = 0)
+zdo<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdo, scores.do, R=100, th.sp = 0, th.env = 0)
 
 
 #ecospat (tests)
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower")
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower")
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower")
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 1000, alternative = "lower",ncores=1)
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 1000, alternative = "lower",ncores=1)
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 1000, alternative = "lower",ncores=1)
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 1000, alternative = "lower",ncores=1)
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 1000, alternative = "lower",ncores=1)
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 1000, alternative = "lower",ncores=1)
 
 overlap.test.dite<-ecospat.niche.overlap (zdi, zte, cor=FALSE)
 overlap.test.dihe<-ecospat.niche.overlap (zdi, zhe, cor=FALSE)
@@ -418,7 +420,7 @@ overlap.test.tehe<-ecospat.niche.overlap (zte, zhe, cor=FALSE)
 overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
-ecospat.plot.niche.dyn (zdo, zte, quant = 0.75)
+ecospat.plot.niche.dyn (zte, zhe, quant = 0.75)
 
 
 similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
