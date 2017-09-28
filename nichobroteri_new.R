@@ -137,8 +137,9 @@ set.seed(110)
 mask <- raster(presvals2)
 res(mask) <- 0.008333333
 x <- circles(presvals2, d=75000, lonlat=TRUE)
+#Se podría hacer un clip de los poligonos y el continente para que no salgan puntos en el mar , solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 500, type='random', iter=2500)
+samp <- spsample(pol, 100, type='random', iter=2500)
 extent(mask)<-extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -152,14 +153,15 @@ proj4string(xy) <- crs.geo
 plot(pol)
 points(xy)
 
-
-
 ploidy <- as.data.frame (ploidy)
 plot(gmap(e, type = "satellite"))
 points(Mercator(xy), col = 'blue', pch=20)
 mycols <- c("black", "green", "red", "white")
 palette(mycols)
 points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+
+presvalsdata <- as.data.frame(presvals2)
+presvalsdata <- presvalsdata[,c(46,47,1:45)]
 
 backgroundclim<-extract(variables,xy)
 backgroundsoil<-extract.list(xy, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
@@ -171,7 +173,17 @@ backgrounddat.c<-backgrounddat.c[,-c(42:44)]
 colnames(backgrounddat.c)[48]<-"AWC"
 backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
 backgrounddat.c <- backgrounddat.c[,-48]
-colnames(backgrounddat.c)<-colnames(as.data.frame(presvals2))
+backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
+colnames(backgrounddat.c)<-colnames(presvalsdata)
+
+coordinates(backgrounddat.c)<- ~long+ lat
+proj4string(backgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(backgrounddat.c), col = 'blue', pch=20)
+mycols <- c("black", "green", "red", "white")
+palette(mycols)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+
 
 
 #background data (x ploidy)
