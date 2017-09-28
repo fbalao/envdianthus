@@ -31,16 +31,16 @@ library (ggbiplot)
 dbroteri <- read.delim2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/Poblaciones_Nicho.csv", sep = ";", fileEncoding = "latin1", colClasses = c("factor", "factor", "numeric", "numeric"))
 ploidy <- dbroteri[,2]
 ploidy <- as.data.frame (ploidy)
-rownames (ploidy) <- c("Monte Clérigo","Sao Bras de Alportel","Zafarraya 1","Zafarraya 2","Órgiva","Laroles","Lliria","Troia","Comporta","Doñana (Peladillo)","Albufera de Valencia","Alcublas","Azuébar","Sierra de Espadán","Chiclana","Ronda","Calblanque (Cabezo de la Fuente)","Socovos","Cartagena","San Miguel de Salinas","Peñón de Ifach","Valverde del Camino","Moguer","Hinojos","Doñana (Acebrón)","Doñana (Puntal)","Huertos del Batán","Isla Cristina (Las Palmeritas)")
+rownames (ploidy) <- c("Monte Clerigo","Sao Bras de Alportel","Zafarraya 1","Zafarraya 2","Orgiva","Laroles","Lliria","Troia","Comporta","Donana (Peladillo)","Albufera de Valencia","Alcublas","Azuebar","Sierra de Espadan","Chiclana","Ronda","Calblanque (Cabezo de la Fuente)","Socovos","Cartagena","San Miguel de Salinas","Penon de Ifach","Valverde del Camino","Moguer","Hinojos","Donana (Acebron)","Donana (Puntal)","Huertos del Batan","Isla Cristina (Las Palmeritas)")
 coordinates (dbroteri) <- ~long + lat
 crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
 proj4string (dbroteri) <- crs.geo
 
 
-#carga de variables predictoras y unión con mismos límites (chelsa, envirem, altitud, SoilGrids)
-#extracción de datos de las variables predictoras en las poblaciones
+#carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
+#extraccion de datos de las variables predictoras en las poblaciones
 
-e <- extent (-10,3,35,44)
+e <- extent (-12,5,33,45)
 
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
@@ -80,14 +80,27 @@ soilgrids<-soilgrids[,-c(1:4)]
 colnames(soilgrids)[7]<-"AWC"
 soilgrids <- soilgrids[,c(7,1,2,3,4,5,6)]
 
+
 presvals <- extract (variables, dbroteri)
 presvals <- cbind (ploidy, presvals, soilgrids) 
 presvals$PHIHOX <- presvals$PHIHOX/10
 
+#calculo del tri a partir de altitud con libreria spatialEco
+#install.packages("spatialEco")
+library(spatialEco)
+tri.ext <- tri(alt.m)
+projection(tri.ext) <- crs.geo 
+trivalues<-extract(tri.ext,dbroteri)
 
-#análisis para descartar variables muy correlacionadas
+
+#sustitucion de los valores tri por los del dataframe con NAs
+presvals <- presvals[,-38]
+presvals <- cbind (presvals, trivalues)
+presvals <- presvals[,c(1:37,46,38:45)]
+colnames(presvals)[38] <- "tri"
+
+#analisis para descartar variables muy correlacionadas
 #PCA de puntos de presencia con variables seleccionadas
-
 
 presvals.pca <- presvals[,-c(1,46)]
 presvals.pca <- cbind (presvals.pca,1)
@@ -161,7 +174,7 @@ hexaploid <- as.data.frame(dbroteri[c(17:21),])
 hexaploid <- hexaploid [,-c(1,2)]
 dodecaploid <- as.data.frame(dbroteri[c(22:28),])
 dodecaploid <- dodecaploid [,-c(1,2)]  
-  
+
 coordinates(diploid)<- ~long+ lat
 proj4string(diploid) <- crs.geo 
 coordinates(tetraploid)<- ~long+ lat
