@@ -207,11 +207,12 @@ coordinates(dodecaploid)<- ~long+ lat
 proj4string(dodecaploid) <- crs.geo 
 
 
+#===============DIPLOID=============#
 maskdi <- raster(diploid)
 res(maskdi) <- 0.008333333
 xdi <- circles(diploid, d=75000, lonlat=TRUE)
 poldi <- gUnaryUnion(xdi@polygons)
-sampdi <- spsample(poldi, 100, type='random', iter=2500)
+sampdi <- spsample(poldi, 30, type='random', iter=2500)
 extent(maskdi)<-extent(poldi)
 cellsdi <- cellFromXY(maskdi, sampdi)
 length(cellsdi)
@@ -221,14 +222,6 @@ xydi <- xyFromCell(maskdi, cellsdi)
 xydi <- as.data.frame(xydi)
 coordinates(xydi)<- ~x+ y
 proj4string(xydi) <- crs.geo
-
-coordinates(backgrounddat.c)<- ~long+ lat
-proj4string(backgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(backgrounddat.c), col = 'blue', pch=20)
-mycols <- c("black", "green", "red", "white")
-palette(mycols)
-points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 dibackgroundclim<-extract(variables,xydi)
 dibackgroundsoil<-extract.list(xydi, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
@@ -240,20 +233,32 @@ dibackgrounddat.c<-dibackgrounddat.c[,-c(42:44)]
 colnames(dibackgrounddat.c)[48]<-"AWC"
 dibackgrounddat.c <- dibackgrounddat.c[,c(1:41,48,42:47)]
 dibackgrounddat.c <- dibackgrounddat.c[,-48]
-colnames(dibackgrounddat.c)<-colnames(as.data.frame(presvals2))
+dibackgrounddat.c <- dibackgrounddat.c[,c(2,3,1,4:47)]
+colnames(dibackgrounddat.c)<-colnames(presvalsdata)
+
+coordinates(dibackgrounddat.c)<- ~long+ lat
+proj4string(dibackgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(dibackgrounddat.c), col = 'blue', pch=20)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+
+#===============DIPLOID=============#
+
+
+#===============TETRAPLOID=============#
 
 maskte <- raster(tetraploid)
-res(maskte) <- 0.08333333
-xte <- circles(tetraploid, d=50000, lonlat=TRUE)
+res(maskte) <- 0.008333333
+xte <- circles(tetraploid, d=75000, lonlat=TRUE)
 polte <- gUnaryUnion(xte@polygons)
-sampte <- spsample(polte, 500, type='random', iter=25)
+sampte <- spsample(polte, 30, type='random', iter=2500)
+extent(maskte)<-extent(polte)
 cellste <- cellFromXY(maskte, sampte)
 length(cellste)
 cellste <- unique(cellste)
 length(cellste)
 xyte <- xyFromCell(maskte, cellste)
 xyte <- as.data.frame(xyte)
-xyte <- xyte[-3,]
 coordinates(xyte)<- ~x+ y
 proj4string(xyte) <- crs.geo
 
@@ -267,26 +272,36 @@ tebackgrounddat.c<-tebackgrounddat.c[,-c(42:44)]
 colnames(tebackgrounddat.c)[48]<-"AWC"
 tebackgrounddat.c <- tebackgrounddat.c[,c(1:41,48,42:47)]
 tebackgrounddat.c <- tebackgrounddat.c[,-48]
-colnames(tebackgrounddat.c)<-colnames(as.data.frame(presvals2))
+tebackgrounddat.c <- tebackgrounddat.c[,c(2,3,1,4:47)]
+colnames(tebackgrounddat.c)<-colnames(presvalsdata)
+
+coordinates(tebackgrounddat.c)<- ~long+ lat
+proj4string(tebackgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(tebackgrounddat.c), col = 'blue', pch=20)
+
+#===============TETRAPLOID=============#
+
+#===============HEXAPLOID=============#
 
 maskhe <- raster(hexaploid)
-res(maskhe) <- 0.08333333
-xhe <- circles(hexaploid, d=50000, lonlat=TRUE)
+res(maskhe) <- 0.008333333
+xhe <- circles(hexaploid, d=75000, lonlat=TRUE)
 polhe <- gUnaryUnion(xhe@polygons)
-samphe <- spsample(polhe, 500, type='random', iter=25)
+samphe <- spsample(polhe, 30, type='random', iher=2500)
+extent(maskhe)<-extent(polhe)
 cellshe <- cellFromXY(maskhe, samphe)
 length(cellshe)
 cellshe <- unique(cellshe)
 length(cellshe)
 xyhe <- xyFromCell(maskhe, cellshe)
 xyhe <- as.data.frame(xyhe)
-xyhe <- xyhe[-4,]
 coordinates(xyhe)<- ~x+ y
 proj4string(xyhe) <- crs.geo
 
 hebackgroundclim<-extract(variables,xyhe)
 hebackgroundsoil<-extract.list(xyhe, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-hebackgrounddat<-cbind("hebackground",as.data.frame(xyhe),hebackgroundclim,hebackgroundsoil)
+hebackgrounddat<-cbind("hebackground",as.data.frame(xyhe),hebackgroundclim, hebackgroundsoil)
 hebackgrounddat<-hebackgrounddat[,-42]
 hebackgrounddat.c<-na.omit(hebackgrounddat)
 hebackgrounddat.c<-cbind(hebackgrounddat.c,apply(hebackgrounddat.c[,c(42:44)], 1, mean))
@@ -294,26 +309,37 @@ hebackgrounddat.c<-hebackgrounddat.c[,-c(42:44)]
 colnames(hebackgrounddat.c)[48]<-"AWC"
 hebackgrounddat.c <- hebackgrounddat.c[,c(1:41,48,42:47)]
 hebackgrounddat.c <- hebackgrounddat.c[,-48]
-colnames(hebackgrounddat.c)<-colnames(as.data.frame(presvals2))
+hebackgrounddat.c <- hebackgrounddat.c[,c(2,3,1,4:47)]
+colnames(hebackgrounddat.c)<-colnames(presvalsdata)
+
+coordinates(hebackgrounddat.c)<- ~long+ lat
+proj4string(hebackgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(hebackgrounddat.c), col = 'blue', pch=20)
+
+#===============HEXAPLOID=============#
+
+
+#===============DODECAPLOID=============#
 
 maskdo <- raster(dodecaploid)
-res(maskdo) <- 0.08333333
-xdo <- circles(dodecaploid, d=50000, lonlat=TRUE)
+res(maskdo) <- 0.008333333
+xdo <- circles(dodecaploid, d=75000, lonlat=TRUE)
 poldo <- gUnaryUnion(xdo@polygons)
-sampdo <- spsample(poldo, 500, type='random', iter=25)
+sampdo <- spsample(poldo, 30, type='random', idor=2500)
+extent(maskdo)<-extent(poldo)
 cellsdo <- cellFromXY(maskdo, sampdo)
 length(cellsdo)
 cellsdo <- unique(cellsdo)
 length(cellsdo)
 xydo <- xyFromCell(maskdo, cellsdo)
 xydo <- as.data.frame(xydo)
-xydo <- xydo[-2,]
 coordinates(xydo)<- ~x+ y
 proj4string(xydo) <- crs.geo
 
 dobackgroundclim<-extract(variables,xydo)
 dobackgroundsoil<-extract.list(xydo, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-dobackgrounddat<-cbind("dobackground",as.data.frame(xydo),dobackgroundclim,dobackgroundsoil)
+dobackgrounddat<-cbind("dobackground",as.data.frame(xydo),dobackgroundclim, dobackgroundsoil)
 dobackgrounddat<-dobackgrounddat[,-42]
 dobackgrounddat.c<-na.omit(dobackgrounddat)
 dobackgrounddat.c<-cbind(dobackgrounddat.c,apply(dobackgrounddat.c[,c(42:44)], 1, mean))
@@ -321,9 +347,25 @@ dobackgrounddat.c<-dobackgrounddat.c[,-c(42:44)]
 colnames(dobackgrounddat.c)[48]<-"AWC"
 dobackgrounddat.c <- dobackgrounddat.c[,c(1:41,48,42:47)]
 dobackgrounddat.c <- dobackgrounddat.c[,-48]
-colnames(dobackgrounddat.c)<-colnames(as.data.frame(presvals2))
+dobackgrounddat.c <- dobackgrounddat.c[,c(2,3,1,4:47)]
+colnames(dobackgrounddat.c)<-colnames(presvalsdata)
 
-todo <- rbind (as.data.frame(presvals2), backgrounddat.c, dibackgrounddat.c, tebackgrounddat.c, hebackgrounddat.c, dobackgrounddat.c)
+coordinates(dobackgrounddat.c)<- ~long+ lat
+proj4string(dobackgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(dobackgrounddat.c), col = 'blue', pch=20)
+
+#===============DODECAPLOID=============#
+
+todo <- rbind (presvalsdata, as.data.frame(backgrounddat.c), as.data.frame(dibackgrounddat.c), as.data.frame(tebackgrounddat.c), as.data.frame(hebackgrounddat.c), as.data.frame(dobackgrounddat.c))
+
+todo.pca <- todo[,-c(1:3)]
+todo.pca <- cbind (todo.pca,1)
+correlations2 <- corSelect (todo.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+selected2 <- correlations$selected.var.cols 
+presvals.pca.2 <- presvals.pca[,c(selected)]
+
+
 
 column <- c(c(rep(1,28),rep(0,649)))
 todo1 <- cbind (todo, column)
