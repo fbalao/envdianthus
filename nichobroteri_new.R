@@ -176,6 +176,7 @@ backgrounddat.c <- backgrounddat.c[,-48]
 backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
 colnames(backgrounddat.c)<-colnames(presvalsdata)
 
+#puntos background corregidos (quitando los NA de coordenadas en el mar)
 coordinates(backgrounddat.c)<- ~long+ lat
 proj4string(backgrounddat.c) <- crs.geo
 plot(gmap(e, type = "satellite"))
@@ -205,20 +206,29 @@ proj4string(hexaploid) <- crs.geo
 coordinates(dodecaploid)<- ~long+ lat
 proj4string(dodecaploid) <- crs.geo 
 
+
 maskdi <- raster(diploid)
-res(maskdi) <- 0.08333333
-xdi <- circles(diploid, d=50000, lonlat=TRUE)
+res(maskdi) <- 0.008333333
+xdi <- circles(diploid, d=75000, lonlat=TRUE)
 poldi <- gUnaryUnion(xdi@polygons)
-sampdi <- spsample(poldi, 500, type='random', iter=25)
+sampdi <- spsample(poldi, 100, type='random', iter=2500)
+extent(maskdi)<-extent(poldi)
 cellsdi <- cellFromXY(maskdi, sampdi)
 length(cellsdi)
 cellsdi <- unique(cellsdi)
 length(cellsdi)
 xydi <- xyFromCell(maskdi, cellsdi)
 xydi <- as.data.frame(xydi)
-xydi <- xydi[-1,]
 coordinates(xydi)<- ~x+ y
 proj4string(xydi) <- crs.geo
+
+coordinates(backgrounddat.c)<- ~long+ lat
+proj4string(backgrounddat.c) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(backgrounddat.c), col = 'blue', pch=20)
+mycols <- c("black", "green", "red", "white")
+palette(mycols)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 dibackgroundclim<-extract(variables,xydi)
 dibackgroundsoil<-extract.list(xydi, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
