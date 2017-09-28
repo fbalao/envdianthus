@@ -40,7 +40,7 @@ proj4string (dbroteri) <- crs.geo
 #carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
 #extraccion de datos de las variables predictoras en las poblaciones
 
-e <- extent (-12,5,33,45)
+e <- extent (-10,3,35,42)
 
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
@@ -108,14 +108,19 @@ correlations <- corSelect (presvals.pca, var.cols = 1:44, sp.cols = 45, cor.thre
 selected <- correlations$selected.var.cols 
 presvals.pca.2 <- presvals.pca[,c(selected)]
 
-pc <- pca (presvals.pca.2, nPcs=3, method="nipals")
-presvals.pca.def <- completeObs (pc)
-presvals.pca.def <- as.data.frame (presvals.pca.def)
-
 ploidy <- ploidy$ploidy
 ploidy <- factor (ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 
-pca <- prcomp(presvals.pca.def, scale. = TRUE, retx = T)
+pca <- prcomp(presvals.pca.2, scale. = TRUE, retx = T)
+ggbiplot(pca, obs.scale = 1,var.scale = 1,
+         groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
+  scale_color_discrete(name = '') +
+  geom_point(aes(colour=ploidy), size = 3) +
+  theme(legend.direction = 'vertical', legend.position = 'right')
+
+
+#PCA con todas las variables
+pca <- prcomp(presvals[,-c(1,46)], scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
          groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
