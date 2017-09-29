@@ -38,6 +38,9 @@ map<-plot(gmap(e, type = "satellite"))
 points<-points(Mercator(cooDbroterigbif), col = "red", pch=20, cex = 1.5)
 
 
+
+
+
 #Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
 cooDbroterigbifdata<-as.data.frame(cooDbroterigbif)
 cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 38 & cooDbroterigbifdata$decimalLongitude > -9.5 & cooDbroterigbifdata$decimalLatitude < 39 & cooDbroterigbifdata$decimalLongitude < -8] <- "4x"
@@ -62,7 +65,20 @@ proj4string(cooDbroterigbif) <- crs.geo
 map<-plot(gmap(e, type = "satellite"))
 points<-points(Mercator(cooDbroterigbifdata), col = cooDbroterigbifdata$ploidy, pch=20, cex = 1.5)
 
+#Eliminar Ocurrencias en el mismo km2. 
+# r <- raster(cooDbroterigbifdata)
+# res(r) <- 0.008333333
+# r <- extend(r, extent(r)+1)
+# cooDbroterigbifdata_sel <- as.data.frame(gridSample(cooDbroterigbifdata, r, n=1))
+# coordinates(cooDbroterigbifdata_sel)<- ~decimalLongitude+ decimalLatitude
+# proj4string(cooDbroterigbifdata_sel) <- crs.geo 
+
 cooDbroterigbifdata<-readRDS(file = "cooDbroterigbifdata.RDS")
+
+
+
+
+
 
 #Extraccion de valores de variables predictoras
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
