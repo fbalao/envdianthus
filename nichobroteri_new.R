@@ -8,7 +8,6 @@ library (rjson)
 library (gtools)
 library (maps)
 library (ggmap)
-library (rgeos)
 library (fuzzySim)
 library (ade4)
 library (pcaMethods)
@@ -24,6 +23,7 @@ library (lattice)
 library (aqp)
 library (soiltexture)
 library (ggbiplot)
+library (psych)
 
 
 #dataset de poblaciones con coordenadas
@@ -109,7 +109,7 @@ ecospat.npred (x, th=0.70)
 
 presvals.pca <- presvals[,-c(1,46)]
 presvals.pca <- cbind (presvals.pca,1)
-correlations <- corSelect (presvals.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+correlations <- corSelect (presvals.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.70)
 selected <- correlations$selected.var.cols 
 presvals.pca.2 <- presvals.pca[,c(selected)]
 
@@ -141,10 +141,10 @@ proj4string(presvals2) <- crs.geo
 set.seed(110)
 mask <- raster(presvals2)
 res(mask) <- 0.008333333
-x <- circles(presvals2, d=25000, lonlat=TRUE)
+x <- circles(presvals2, d=50000, lonlat=TRUE)
 #Se podría hacer un clip de los poligonos y el continente para que no salgan puntos en el mar , solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 500, type='random', iter=2500)
+samp <- spsample(pol, 5000, type='random', iter=25)
 extent(mask)<-extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -180,16 +180,29 @@ backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
 backgrounddat.c <- backgrounddat.c[,-48]
 backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
 colnames(backgrounddat.c)<-colnames(presvalsdata)
-
-#puntos background corregidos (quitando los NA de coordenadas en el mar)
 coordinates(backgrounddat.c)<- ~long+ lat
 proj4string(backgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(backgrounddat.c), col = 'blue', pch=20)
-mycols <- c("black", "green", "red", "white")
-palette(mycols)
-points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+trivalues1<-extract(tri.ext,backgrounddat.c)
 
+
+#sustitucion de los valores tri por los del dataframe con NAs
+backgrounddat.c <- as.data.frame(backgrounddat.c)
+backgrounddat.c <- backgrounddat.c[,-40]
+backgrounddat.c <- cbind (backgrounddat.c, trivalues1)
+backgrounddat.c <- backgrounddat.c[,c(1:39,47,40:46)]
+colnames(backgrounddat.c)[40] <- "tri"
+
+coordinates(backgrounddat.c)<- ~long+ lat
+proj4string(backgrounddat.c) <- crs.geo
+r <- raster(backgrounddat.c)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+backgrounddat.c_sel <- as.data.frame(gridSample(backgrounddat.c, r, n=1))
+coordinates(backgrounddat.c_sel)<- ~long+ lat
+proj4string(backgrounddat.c_sel) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(backgrounddat.c_sel), col = 'blue', pch=20)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 
 #background data (x ploidy)
@@ -215,9 +228,9 @@ proj4string(dodecaploid) <- crs.geo
 #===============DIPLOID=============#
 maskdi <- raster(diploid)
 res(maskdi) <- 0.008333333
-xdi <- circles(diploid, d=25000, lonlat=TRUE)
+xdi <- circles(diploid, d=50000, lonlat=TRUE)
 poldi <- gUnaryUnion(xdi@polygons)
-sampdi <- spsample(poldi, 100, type='random', iter=2500)
+sampdi <- spsample(poldi, 1000, type='random', iter=25)
 extent(maskdi)<-extent(poldi)
 cellsdi <- cellFromXY(maskdi, sampdi)
 length(cellsdi)
@@ -240,11 +253,28 @@ dibackgrounddat.c <- dibackgrounddat.c[,c(1:41,48,42:47)]
 dibackgrounddat.c <- dibackgrounddat.c[,-48]
 dibackgrounddat.c <- dibackgrounddat.c[,c(2,3,1,4:47)]
 colnames(dibackgrounddat.c)<-colnames(presvalsdata)
+coordinates(dibackgrounddat.c)<- ~long+ lat
+proj4string(dibackgrounddat.c) <- crs.geo
+trivalues2<-extract(tri.ext,dibackgrounddat.c)
+
+
+#sustitucion de los valores tri por los del dataframe con NAs
+dibackgrounddat.c <- as.data.frame(dibackgrounddat.c)
+dibackgrounddat.c <- dibackgrounddat.c[,-40]
+dibackgrounddat.c <- cbind (dibackgrounddat.c, trivalues2)
+dibackgrounddat.c <- dibackgrounddat.c[,c(1:39,47,40:46)]
+colnames(dibackgrounddat.c)[40] <- "tri"
 
 coordinates(dibackgrounddat.c)<- ~long+ lat
 proj4string(dibackgrounddat.c) <- crs.geo
+r <- raster(dibackgrounddat.c)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+dibackgrounddat.c_sel <- as.data.frame(gridSample(dibackgrounddat.c, r, n=1))
+coordinates(dibackgrounddat.c_sel)<- ~long+ lat
+proj4string(dibackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(dibackgrounddat.c), col = 'blue', pch=20)
+points(Mercator(dibackgrounddat.c_sel), col = 'blue', pch=20)
 points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 #===============DIPLOID=============#
@@ -254,9 +284,9 @@ points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 maskte <- raster(tetraploid)
 res(maskte) <- 0.008333333
-xte <- circles(tetraploid, d=25000, lonlat=TRUE)
+xte <- circles(tetraploid, d=50000, lonlat=TRUE)
 polte <- gUnaryUnion(xte@polygons)
-sampte <- spsample(polte, 100, type='random', iter=2500)
+sampte <- spsample(polte, 1000, type='random', iter=25)
 extent(maskte)<-extent(polte)
 cellste <- cellFromXY(maskte, sampte)
 length(cellste)
@@ -279,11 +309,30 @@ tebackgrounddat.c <- tebackgrounddat.c[,c(1:41,48,42:47)]
 tebackgrounddat.c <- tebackgrounddat.c[,-48]
 tebackgrounddat.c <- tebackgrounddat.c[,c(2,3,1,4:47)]
 colnames(tebackgrounddat.c)<-colnames(presvalsdata)
+coordinates(tebackgrounddat.c)<- ~long+ lat
+proj4string(tebackgrounddat.c) <- crs.geo
+trivalues3<-extract(tri.ext,tebackgrounddat.c)
+
+
+#sustitucion de los valores tri por los del dataframe con NAs
+tebackgrounddat.c <- as.data.frame(tebackgrounddat.c)
+tebackgrounddat.c <- tebackgrounddat.c[,-40]
+tebackgrounddat.c <- cbind (tebackgrounddat.c, trivalues3)
+tebackgrounddat.c <- tebackgrounddat.c[,c(1:39,47,40:46)]
+colnames(tebackgrounddat.c)[40] <- "tri"
+
 
 coordinates(tebackgrounddat.c)<- ~long+ lat
 proj4string(tebackgrounddat.c) <- crs.geo
+r <- raster(tebackgrounddat.c)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+tebackgrounddat.c_sel <- as.data.frame(gridSample(tebackgrounddat.c, r, n=1))
+coordinates(tebackgrounddat.c_sel)<- ~long+ lat
+proj4string(tebackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(tebackgrounddat.c), col = 'blue', pch=20)
+points(Mercator(tebackgrounddat.c_sel), col = 'blue', pch=20)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 #===============TETRAPLOID=============#
 
@@ -291,9 +340,9 @@ points(Mercator(tebackgrounddat.c), col = 'blue', pch=20)
 
 maskhe <- raster(hexaploid)
 res(maskhe) <- 0.008333333
-xhe <- circles(hexaploid, d=25000, lonlat=TRUE)
+xhe <- circles(hexaploid, d=50000, lonlat=TRUE)
 polhe <- gUnaryUnion(xhe@polygons)
-samphe <- spsample(polhe, 100, type='random', iher=2500)
+samphe <- spsample(polhe, 1000, type='random', iter=25)
 extent(maskhe)<-extent(polhe)
 cellshe <- cellFromXY(maskhe, samphe)
 length(cellshe)
@@ -316,11 +365,29 @@ hebackgrounddat.c <- hebackgrounddat.c[,c(1:41,48,42:47)]
 hebackgrounddat.c <- hebackgrounddat.c[,-48]
 hebackgrounddat.c <- hebackgrounddat.c[,c(2,3,1,4:47)]
 colnames(hebackgrounddat.c)<-colnames(presvalsdata)
+coordinates(hebackgrounddat.c)<- ~long+ lat
+proj4string(hebackgrounddat.c) <- crs.geo
+trivalues4<-extract(tri.ext,hebackgrounddat.c)
+
+
+#sustitucion de los valores tri por los del dataframe con NAs
+hebackgrounddat.c <- as.data.frame(hebackgrounddat.c)
+hebackgrounddat.c <- hebackgrounddat.c[,-40]
+hebackgrounddat.c <- cbind (hebackgrounddat.c, trivalues4)
+hebackgrounddat.c <- hebackgrounddat.c[,c(1:39,47,40:46)]
+colnames(hebackgrounddat.c)[40] <- "tri"
 
 coordinates(hebackgrounddat.c)<- ~long+ lat
 proj4string(hebackgrounddat.c) <- crs.geo
+r <- raster(hebackgrounddat.c)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+hebackgrounddat.c_sel <- as.data.frame(gridSample(hebackgrounddat.c, r, n=1))
+coordinates(hebackgrounddat.c_sel)<- ~long+ lat
+proj4string(hebackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(hebackgrounddat.c), col = 'blue', pch=20)
+points(Mercator(hebackgrounddat.c_sel), col = 'blue', pch=20)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 #===============HEXAPLOID=============#
 
@@ -331,7 +398,7 @@ maskdo <- raster(dodecaploid)
 res(maskdo) <- 0.008333333
 xdo <- circles(dodecaploid, d=25000, lonlat=TRUE)
 poldo <- gUnaryUnion(xdo@polygons)
-sampdo <- spsample(poldo, 100, type='random', idor=2500)
+sampdo <- spsample(poldo, 200, type='random', idor=25)
 extent(maskdo)<-extent(poldo)
 cellsdo <- cellFromXY(maskdo, sampdo)
 length(cellsdo)
@@ -354,11 +421,29 @@ dobackgrounddat.c <- dobackgrounddat.c[,c(1:41,48,42:47)]
 dobackgrounddat.c <- dobackgrounddat.c[,-48]
 dobackgrounddat.c <- dobackgrounddat.c[,c(2,3,1,4:47)]
 colnames(dobackgrounddat.c)<-colnames(presvalsdata)
+coordinates(dobackgrounddat.c)<- ~long+ lat
+proj4string(dobackgrounddat.c) <- crs.geo
+trivalues5<-extract(tri.ext,dobackgrounddat.c)
+
+
+#sustitucion de los valores tri por los del dataframe con NAs
+dobackgrounddat.c <- as.data.frame(dobackgrounddat.c)
+dobackgrounddat.c <- dobackgrounddat.c[,-40]
+dobackgrounddat.c <- cbind (dobackgrounddat.c, trivalues5)
+dobackgrounddat.c <- dobackgrounddat.c[,c(1:39,47,40:46)]
+colnames(dobackgrounddat.c)[40] <- "tri"
 
 coordinates(dobackgrounddat.c)<- ~long+ lat
 proj4string(dobackgrounddat.c) <- crs.geo
+r <- raster(dobackgrounddat.c)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+dobackgrounddat.c_sel <- as.data.frame(gridSample(dobackgrounddat.c, r, n=1))
+coordinates(dobackgrounddat.c_sel)<- ~long+ lat
+proj4string(dobackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(dobackgrounddat.c), col = 'blue', pch=20)
+points(Mercator(dobackgrounddat.c_sel), col = 'blue', pch=20)
+points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 
 #===============DODECAPLOID=============#
 
@@ -373,13 +458,13 @@ selected2 <- correlations2$selected.var.cols
 todo.pca.2 <- todo.pca[,c(selected2)]
 
 todoploidy <- todo$ploidy
+w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))),rep(0,nrow(as.data.frame(dibackgrounddat.c))), rep(0,nrow(as.data.frame(tebackgrounddat.c))), rep(0,nrow(as.data.frame(hebackgrounddat.c))), rep(0,nrow(as.data.frame(dobackgrounddat.c))))
 
-pcaback <- prcomp(todo.pca.2, scale. = TRUE, retx = T)
-ggbiplot(pcaback, obs.scale = 1,var.scale = 1,
-         groups = todoploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
-  scale_color_discrete(name = '') +
-  geom_point(aes(colour=todoploidy), size = 2) +
-  theme(legend.direction = 'vertical', legend.position = 'right')
+pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
+gcol = c("blue", "red", "green", "yellow", "orange", "purple", "cyan", "black", "grey")
+s.label(pcaback$li, clabel = 0.1)
+scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
+s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
 
 
 #===============ECOSPAT=============#
@@ -394,15 +479,15 @@ row.bacte<-which(todo[,3] == "tebackground")
 row.bache<-which(todo[,3] == "hebackground")
 row.bacdo<-which(todo[,3] == "dobackground")
 
-scores.clim<- pcaback$x[row.back,1:2] 
-scores.di<- pcaback$x[row.di,1:2]		
-scores.te<- pcaback$x[row.te,1:2]	
-scores.he<- pcaback$x[row.he,1:2]	
-scores.do<- pcaback$x[row.do,1:2]	
-scores.bacdi<- pcaback$x[row.bacdi,1:2]					
-scores.bacte<- pcaback$x[row.bacte,1:2]	
-scores.bache<- pcaback$x[row.bache,1:2]	
-scores.bacdo<- pcaback$x[row.bacdo,1:2]	
+scores.clim<- pcaback$li[row.back,] 
+scores.di<- pcaback$li[row.di,]		
+scores.te<- pcaback$li[row.te,]	
+scores.he<- pcaback$li[row.he,]	
+scores.do<- pcaback$li[row.do,]	
+scores.bacdi<- pcaback$li[row.bacdi,]					
+scores.bacte<- pcaback$li[row.bacte,]	
+scores.bache<- pcaback$li[row.bache,]	
+scores.bacdo<- pcaback$li[row.bacdo,]	
 
 zdi<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdi, scores.di, R=100, th.sp = 0, th.env = 0)
 zte<- ecospat.grid.clim.dyn2(scores.clim, scores.bacte, scores.te, R=100, th.sp = 0, th.env = 0)
@@ -411,12 +496,12 @@ zdo<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdo, scores.do, R=100, th.sp 
 
 
 #ecospat (tests)
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 1000, alternative = "lower",ncores=1)
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 1000, alternative = "lower",ncores=1)
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 1000, alternative = "lower",ncores=1)
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 1000, alternative = "lower",ncores=1)
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 1000, alternative = "lower",ncores=1)
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 1000, alternative = "lower",ncores=1)
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 1000, alternative = "lower")
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 1000, alternative = "lower")
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 1000, alternative = "lower")
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 1000, alternative = "lower")
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 1000, alternative = "lower")
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 1000, alternative = "lower")
 
 overlap.test.dite<-ecospat.niche.overlap (zdi, zte, cor=FALSE)
 overlap.test.dihe<-ecospat.niche.overlap (zdi, zhe, cor=FALSE)
