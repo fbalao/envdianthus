@@ -1,29 +1,29 @@
-  library (dismo)
- library (raster)
-  library (rJava)
-  library (rgdal)
+library (dismo)
+library (raster)
+library (rJava)
+library (rgdal)
 library (rgeos)
 library (rgbif)
 library (rjson)
 library (gtools)
-  library (maps)
-  library (ggmap)
-  library (rgeos)
- library (fuzzySim)
-  library (ade4)
- library (pcaMethods)
- library (ecospat)
- library (sp)
- library (GSIF)
- library (caret)
-  library (RCurl)
-  library (gdalUtils)
-  library (plotKML)
-  library (XML)
-  library (lattice)
-  library (aqp)
-  library (soiltexture)
- library (ggbiplot)
+library (maps)
+library (ggmap)
+library (rgeos)
+library (fuzzySim)
+library (ade4)
+library (pcaMethods)
+library (ecospat)
+library (sp)
+library (GSIF)
+library (caret)
+library (RCurl)
+library (gdalUtils)
+library (plotKML)
+library (XML)
+library (lattice)
+library (aqp)
+library (soiltexture)
+library (ggbiplot)
 
 
 #dataset de poblaciones con coordenadas
@@ -99,8 +99,13 @@ presvals <- cbind (presvals, trivalues)
 presvals <- presvals[,c(1:37,46,38:45)]
 colnames(presvals)[38] <- "tri"
 
+
 #analisis para descartar variables muy correlacionadas
 #PCA de puntos de presencia con variables seleccionadas
+
+colvar <- presvals[c(2:45)]
+x <- cor(colvar, method="pearson")
+ecospat.npred (x, th=0.70)
 
 presvals.pca <- presvals[,-c(1,46)]
 presvals.pca <- cbind (presvals.pca,1)
