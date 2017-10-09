@@ -495,7 +495,7 @@ overlap.test.tehe<-ecospat.niche.overlap (zte, zhe, cor=FALSE)
 overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
-ecospat.plot.niche.dyn (zte, zhe, quant = 0.75)
+ecospat.plot.niche.dyn (zdi, zdo, quant = 0.75)
 
 
 similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
