@@ -24,7 +24,8 @@ library (GSIF)
 # library (soiltexture)
 library (ggbiplot)
 # library (psych)
-library(spatialEco)
+library (spatialEco)
+library (spThin)
 
 
 #dataset de poblaciones con coordenadas
@@ -134,6 +135,7 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #===============PREPARATION OF DATAFRAMES=============#
+
 dbroteridata <- as.data.frame(dbroteri)
 presvalsdata <- cbind (dbroteridata[,c(3,4)], presvals)
 presvalsdata <- presvalsdata [,-48]
@@ -160,59 +162,68 @@ proj4string(hexaploid) <- crs.geo
 coordinates(dodecaploid)<- ~long+ lat
 proj4string(dodecaploid) <- crs.geo 
 
+#===============PREPARATION OF DATAFRAMES=============#
+
 
 #===============DIPLOID=============#
 
 maskdi <- raster(diploid)
 res(maskdi) <- 0.008333333
 xdi <- circles(diploid, d=50000, lonlat=TRUE)
-#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar , solucion provisional aumentar el N
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 poldi <- gUnaryUnion(xdi@polygons)
 sampdi <- spsample(poldi, 1000, type='random', iter=25)
-extent(maskdi)<-extent(poldi) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
+extent(maskdi) <- extent(poldi) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cellsdi <- cellFromXY(maskdi, sampdi)
 length(cellsdi)
 cellsdi <- unique(cellsdi)
 length(cellsdi)
 xydi <- xyFromCell(maskdi, cellsdi)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
 xydi <- as.data.frame(xydi)
-coordinates(xydi)<- ~x+ y
-proj4string(xydi) <- crs.geo
+diploid <- as.data.frame(diploid)
+colnames(xydi) <- colnames(diploid)
+dibackcoord <- rbind(xydi, diploid)
 
-dibackgroundclim<-extract(variables,xydi)
-dibackgroundsoil<-extract.list(xydi, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-dibackgrounddat<-cbind("dibackground",as.data.frame(xydi),dibackgroundclim, dibackgroundsoil)
-dibackgrounddat<-dibackgrounddat[,-42]
-dibackgrounddat.c<-na.omit(dibackgrounddat)
-dibackgrounddat.c<-cbind(dibackgrounddat.c,apply(dibackgrounddat.c[,c(42:44)], 1, mean))
-dibackgrounddat.c<-dibackgrounddat.c[,-c(42:44)]
-colnames(dibackgrounddat.c)[48]<-"AWC"
+# Quitamos los puntos en el mismo km^2
+coordinates(dibackcoord) <- ~long+ lat
+proj4string(dibackcoord) <- crs.geo
+r <- raster(dibackcoord)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+dibackcoord_sel <- as.data.frame(gridSample(dibackcoord, r, n=1))
+coordinates(dibackcoord_sel) <- ~long+ lat
+proj4string(dibackcoord_sel) <- crs.geo
+
+# Extraccion de variables para el background y modificacion de la tabla
+dibackgroundclim <- extract(variables,dibackcoord_sel)
+dibackgroundsoil <- extract.list(dibackcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+dibackgrounddat <- cbind("dibackground",as.data.frame(dibackcoord_sel),dibackgroundclim, dibackgroundsoil)
+dibackgrounddat <- dibackgrounddat[,-42]
+
+coordinates(dibackgrounddat) <- ~long+ lat
+proj4string(dibackgrounddat) <- crs.geo
+trivalues1 <- extract(tri.ext,dibackgrounddat)
+dibackgrounddat <- as.data.frame(dibackgrounddat)
+dibackgrounddat <- dibackgrounddat[,-40]
+dibackgrounddat <- cbind (dibackgrounddat, trivalues1)
+dibackgrounddat <- dibackgrounddat[,c(1:39,50,40:49)]
+colnames(dibackgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
+
+dibackgrounddat.c <- na.omit(dibackgrounddat)
+dibackgrounddat.c <- cbind(dibackgrounddat.c,apply(dibackgrounddat.c[,c(42:44)], 1, mean))
+dibackgrounddat.c <- dibackgrounddat.c[,-c(42:44)]
+colnames(dibackgrounddat.c)[48] <- "AWC"
 dibackgrounddat.c <- dibackgrounddat.c[,c(1:41,48,42:47)]
 dibackgrounddat.c <- dibackgrounddat.c[,-48]
 dibackgrounddat.c <- dibackgrounddat.c[,c(2,3,1,4:47)]
-colnames(dibackgrounddat.c)<-colnames(presvals2)
-coordinates(dibackgrounddat.c)<- ~long+ lat
+colnames(dibackgrounddat.c) <- colnames(presvals2)
+
+# Representacion de los puntos en el mapa alrededor de los de presencia
+coordinates(dibackgrounddat.c) <- ~long+ lat
 proj4string(dibackgrounddat.c) <- crs.geo
-trivalues2<-extract(tri.ext,dibackgrounddat.c)
-
-
-#sustitucion de los valores tri por los del dataframe con NAs
-dibackgrounddat.c <- as.data.frame(dibackgrounddat.c)
-dibackgrounddat.c <- dibackgrounddat.c[,-40]
-dibackgrounddat.c <- cbind (dibackgrounddat.c, trivalues2)
-dibackgrounddat.c <- dibackgrounddat.c[,c(1:39,47,40:46)]
-colnames(dibackgrounddat.c)[40] <- "tri"
-
-coordinates(dibackgrounddat.c)<- ~long+ lat
-proj4string(dibackgrounddat.c) <- crs.geo
-r <- raster(dibackgrounddat.c)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-dibackgrounddat.c_sel <- as.data.frame(gridSample(dibackgrounddat.c, r, n=1))
-coordinates(dibackgrounddat.c_sel)<- ~long+ lat
-proj4string(dibackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(dibackgrounddat.c_sel), col = 'orange', pch=20, cex=1)
+points(Mercator(dibackgrounddat.c), col = 'orange', pch=20, cex=1)
 points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 #===============DIPLOID=============#
@@ -223,53 +234,60 @@ points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 maskte <- raster(tetraploid)
 res(maskte) <- 0.008333333
 xte <- circles(tetraploid, d=50000, lonlat=TRUE)
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 polte <- gUnaryUnion(xte@polygons)
 sampte <- spsample(polte, 1000, type='random', iter=25)
-extent(maskte)<-extent(polte)
+extent(maskte) <- extent(polte) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cellste <- cellFromXY(maskte, sampte)
 length(cellste)
 cellste <- unique(cellste)
 length(cellste)
 xyte <- xyFromCell(maskte, cellste)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
 xyte <- as.data.frame(xyte)
-coordinates(xyte)<- ~x+ y
-proj4string(xyte) <- crs.geo
+tetraploid <- as.data.frame(tetraploid)
+colnames(xyte) <- colnames(tetraploid)
+tebackcoord <- rbind(xyte, tetraploid)
 
-tebackgroundclim<-extract(variables,xyte)
-tebackgroundsoil<-extract.list(xyte, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-tebackgrounddat<-cbind("tebackground",as.data.frame(xyte),tebackgroundclim, tebackgroundsoil)
-tebackgrounddat<-tebackgrounddat[,-42]
-tebackgrounddat.c<-na.omit(tebackgrounddat)
-tebackgrounddat.c<-cbind(tebackgrounddat.c,apply(tebackgrounddat.c[,c(42:44)], 1, mean))
-tebackgrounddat.c<-tebackgrounddat.c[,-c(42:44)]
-colnames(tebackgrounddat.c)[48]<-"AWC"
+# Quitamos los puntos en el mismo km^2
+coordinates(tebackcoord) <- ~long+ lat
+proj4string(tebackcoord) <- crs.geo
+r <- raster(tebackcoord)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+tebackcoord_sel <- as.data.frame(gridSample(tebackcoord, r, n=1))
+coordinates(tebackcoord_sel) <- ~long+ lat
+proj4string(tebackcoord_sel) <- crs.geo
+
+# Extraccion de variables para el background y modificacion de la tabla
+tebackgroundclim <- extract(variables,tebackcoord_sel)
+tebackgroundsoil <- extract.list(tebackcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+tebackgrounddat <- cbind("tebackground",as.data.frame(tebackcoord_sel),tebackgroundclim, tebackgroundsoil)
+tebackgrounddat <- tebackgrounddat[,-42]
+
+coordinates(tebackgrounddat) <- ~long+ lat
+proj4string(tebackgrounddat) <- crs.geo
+trivalues2 <- extract(tri.ext,tebackgrounddat)
+tebackgrounddat <- as.data.frame(tebackgrounddat)
+tebackgrounddat <- tebackgrounddat[,-40]
+tebackgrounddat <- cbind (tebackgrounddat, trivalues2)
+tebackgrounddat <- tebackgrounddat[,c(1:39,50,40:49)]
+colnames(tebackgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
+
+tebackgrounddat.c <- na.omit(tebackgrounddat)
+tebackgrounddat.c <- cbind(tebackgrounddat.c,apply(tebackgrounddat.c[,c(42:44)], 1, mean))
+tebackgrounddat.c <- tebackgrounddat.c[,-c(42:44)]
+colnames(tebackgrounddat.c)[48] <- "AWC"
 tebackgrounddat.c <- tebackgrounddat.c[,c(1:41,48,42:47)]
 tebackgrounddat.c <- tebackgrounddat.c[,-48]
 tebackgrounddat.c <- tebackgrounddat.c[,c(2,3,1,4:47)]
-colnames(tebackgrounddat.c)<-colnames(presvals2)
-coordinates(tebackgrounddat.c)<- ~long+ lat
+colnames(tebackgrounddat.c) <- colnames(presvals2)
+
+# Representacion de los puntos en el mapa alrededor de los de presencia
+coordinates(tebackgrounddat.c) <- ~long+ lat
 proj4string(tebackgrounddat.c) <- crs.geo
-trivalues3<-extract(tri.ext,tebackgrounddat.c)
-
-
-#sustitucion de los valores tri por los del dataframe con NAs
-tebackgrounddat.c <- as.data.frame(tebackgrounddat.c)
-tebackgrounddat.c <- tebackgrounddat.c[,-40]
-tebackgrounddat.c <- cbind (tebackgrounddat.c, trivalues3)
-tebackgrounddat.c <- tebackgrounddat.c[,c(1:39,47,40:46)]
-colnames(tebackgrounddat.c)[40] <- "tri"
-
-
-coordinates(tebackgrounddat.c)<- ~long+ lat
-proj4string(tebackgrounddat.c) <- crs.geo
-r <- raster(tebackgrounddat.c)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-tebackgrounddat.c_sel <- as.data.frame(gridSample(tebackgrounddat.c, r, n=1))
-coordinates(tebackgrounddat.c_sel)<- ~long+ lat
-proj4string(tebackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(tebackgrounddat.c_sel), col = 'orange', pch=20, cex=1)
+points(Mercator(tebackgrounddat.c), col = 'orange', pch=20, cex=1)
 points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 #===============TETRAPLOID=============#
@@ -279,52 +297,60 @@ points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 maskhe <- raster(hexaploid)
 res(maskhe) <- 0.008333333
 xhe <- circles(hexaploid, d=30000, lonlat=TRUE)
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 polhe <- gUnaryUnion(xhe@polygons)
 samphe <- spsample(polhe, 500, type='random', iter=25)
-extent(maskhe)<-extent(polhe)
+extent(maskhe) <- extent(polhe) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cellshe <- cellFromXY(maskhe, samphe)
 length(cellshe)
 cellshe <- unique(cellshe)
 length(cellshe)
 xyhe <- xyFromCell(maskhe, cellshe)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
 xyhe <- as.data.frame(xyhe)
-coordinates(xyhe)<- ~x+ y
-proj4string(xyhe) <- crs.geo
+hexaploid <- as.data.frame(hexaploid)
+colnames(xyhe) <- colnames(hexaploid)
+hebackcoord <- rbind(xyhe, hexaploid)
 
-hebackgroundclim<-extract(variables,xyhe)
-hebackgroundsoil<-extract.list(xyhe, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-hebackgrounddat<-cbind("hebackground",as.data.frame(xyhe),hebackgroundclim, hebackgroundsoil)
-hebackgrounddat<-hebackgrounddat[,-42]
-hebackgrounddat.c<-na.omit(hebackgrounddat)
-hebackgrounddat.c<-cbind(hebackgrounddat.c,apply(hebackgrounddat.c[,c(42:44)], 1, mean))
-hebackgrounddat.c<-hebackgrounddat.c[,-c(42:44)]
-colnames(hebackgrounddat.c)[48]<-"AWC"
+# Quitamos los puntos en el mismo km^2
+coordinates(hebackcoord) <- ~long+ lat
+proj4string(hebackcoord) <- crs.geo
+r <- raster(hebackcoord)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+hebackcoord_sel <- as.data.frame(gridSample(hebackcoord, r, n=1))
+coordinates(hebackcoord_sel) <- ~long+ lat
+proj4string(hebackcoord_sel) <- crs.geo
+
+# Extraccion de variables para el background y modificacion de la tabla
+hebackgroundclim <- extract(variables,hebackcoord_sel)
+hebackgroundsoil <- extract.list(hebackcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+hebackgrounddat <- cbind("hebackground",as.data.frame(hebackcoord_sel),hebackgroundclim, hebackgroundsoil)
+hebackgrounddat <- hebackgrounddat[,-42]
+
+coordinates(hebackgrounddat) <- ~long+ lat
+proj4string(hebackgrounddat) <- crs.geo
+trivalues3 <- extract(tri.ext,hebackgrounddat)
+hebackgrounddat <- as.data.frame(hebackgrounddat)
+hebackgrounddat <- hebackgrounddat[,-40]
+hebackgrounddat <- cbind (hebackgrounddat, trivalues3)
+hebackgrounddat <- hebackgrounddat[,c(1:39,50,40:49)]
+colnames(hebackgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
+
+hebackgrounddat.c <- na.omit(hebackgrounddat)
+hebackgrounddat.c <- cbind(hebackgrounddat.c,apply(hebackgrounddat.c[,c(42:44)], 1, mean))
+hebackgrounddat.c <- hebackgrounddat.c[,-c(42:44)]
+colnames(hebackgrounddat.c)[48] <- "AWC"
 hebackgrounddat.c <- hebackgrounddat.c[,c(1:41,48,42:47)]
 hebackgrounddat.c <- hebackgrounddat.c[,-48]
 hebackgrounddat.c <- hebackgrounddat.c[,c(2,3,1,4:47)]
-colnames(hebackgrounddat.c)<-colnames(presvals2)
-coordinates(hebackgrounddat.c)<- ~long+ lat
+colnames(hebackgrounddat.c) <- colnames(presvals2)
+
+# Representacion de los puntos en el mapa alrededor de los de presencia
+coordinates(hebackgrounddat.c) <- ~long+ lat
 proj4string(hebackgrounddat.c) <- crs.geo
-trivalues4<-extract(tri.ext,hebackgrounddat.c)
-
-
-#sustitucion de los valores tri por los del dataframe con NAs
-hebackgrounddat.c <- as.data.frame(hebackgrounddat.c)
-hebackgrounddat.c <- hebackgrounddat.c[,-40]
-hebackgrounddat.c <- cbind (hebackgrounddat.c, trivalues4)
-hebackgrounddat.c <- hebackgrounddat.c[,c(1:39,47,40:46)]
-colnames(hebackgrounddat.c)[40] <- "tri"
-
-coordinates(hebackgrounddat.c)<- ~long+ lat
-proj4string(hebackgrounddat.c) <- crs.geo
-r <- raster(hebackgrounddat.c)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-hebackgrounddat.c_sel <- as.data.frame(gridSample(hebackgrounddat.c, r, n=1))
-coordinates(hebackgrounddat.c_sel)<- ~long+ lat
-proj4string(hebackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(hebackgrounddat.c_sel), col = 'orange', pch=20, cex=1)
+points(Mercator(hebackgrounddat.c), col = 'orange', pch=20, cex=1)
 points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 #===============HEXAPLOID=============#
@@ -335,110 +361,73 @@ points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 maskdo <- raster(dodecaploid)
 res(maskdo) <- 0.008333333
 xdo <- circles(dodecaploid, d=25000, lonlat=TRUE)
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 poldo <- gUnaryUnion(xdo@polygons)
 sampdo <- spsample(poldo, 250, type='random', iter=25)
-extent(maskdo)<-extent(poldo)
+extent(maskdo) <- extent(poldo) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cellsdo <- cellFromXY(maskdo, sampdo)
 length(cellsdo)
 cellsdo <- unique(cellsdo)
 length(cellsdo)
 xydo <- xyFromCell(maskdo, cellsdo)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
 xydo <- as.data.frame(xydo)
-coordinates(xydo)<- ~x+ y
-proj4string(xydo) <- crs.geo
+dodecaploid <- as.data.frame(dodecaploid)
+colnames(xydo) <- colnames(dodecaploid)
+dobackcoord <- rbind(xydo, dodecaploid)
 
-dobackgroundclim<-extract(variables,xydo)
-dobackgroundsoil<-extract.list(xydo, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-dobackgrounddat<-cbind("dobackground",as.data.frame(xydo),dobackgroundclim, dobackgroundsoil)
-dobackgrounddat<-dobackgrounddat[,-42]
-dobackgrounddat.c<-na.omit(dobackgrounddat)
-dobackgrounddat.c<-cbind(dobackgrounddat.c,apply(dobackgrounddat.c[,c(42:44)], 1, mean))
-dobackgrounddat.c<-dobackgrounddat.c[,-c(42:44)]
-colnames(dobackgrounddat.c)[48]<-"AWC"
+# Quitamos los puntos en el mismo km^2
+coordinates(dobackcoord) <- ~long+ lat
+proj4string(dobackcoord) <- crs.geo
+r <- raster(dobackcoord)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+dobackcoord_sel <- as.data.frame(gridSample(dobackcoord, r, n=1))
+coordinates(dobackcoord_sel) <- ~long+ lat
+proj4string(dobackcoord_sel) <- crs.geo
+
+# Extraccion de variables para el background y modificacion de la tabla
+dobackgroundclim <- extract(variables,dobackcoord_sel)
+dobackgroundsoil <- extract.list(dobackcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+dobackgrounddat <- cbind("dobackground",as.data.frame(dobackcoord_sel),dobackgroundclim, dobackgroundsoil)
+dobackgrounddat <- dobackgrounddat[,-42]
+
+coordinates(dobackgrounddat) <- ~long+ lat
+proj4string(dobackgrounddat) <- crs.geo
+trivalues4 <- extract(tri.ext,dobackgrounddat)
+dobackgrounddat <- as.data.frame(dobackgrounddat)
+dobackgrounddat <- dobackgrounddat[,-40]
+dobackgrounddat <- cbind (dobackgrounddat, trivalues4)
+dobackgrounddat <- dobackgrounddat[,c(1:39,50,40:49)]
+colnames(dobackgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
+
+dobackgrounddat.c <- na.omit(dobackgrounddat)
+dobackgrounddat.c <- cbind(dobackgrounddat.c,apply(dobackgrounddat.c[,c(42:44)], 1, mean))
+dobackgrounddat.c <- dobackgrounddat.c[,-c(42:44)]
+colnames(dobackgrounddat.c)[48] <- "AWC"
 dobackgrounddat.c <- dobackgrounddat.c[,c(1:41,48,42:47)]
 dobackgrounddat.c <- dobackgrounddat.c[,-48]
 dobackgrounddat.c <- dobackgrounddat.c[,c(2,3,1,4:47)]
-colnames(dobackgrounddat.c)<-colnames(presvals2)
-coordinates(dobackgrounddat.c)<- ~long+ lat
+colnames(dobackgrounddat.c) <- colnames(presvals2)
+
+# Representacion de los puntos en el mapa alrededor de los de presencia
+coordinates(dobackgrounddat.c) <- ~long+ lat
 proj4string(dobackgrounddat.c) <- crs.geo
-trivalues5<-extract(tri.ext,dobackgrounddat.c)
-
-
-#sustitucion de los valores tri por los del dataframe con NAs
-dobackgrounddat.c <- as.data.frame(dobackgrounddat.c)
-dobackgrounddat.c <- dobackgrounddat.c[,-40]
-dobackgrounddat.c <- cbind (dobackgrounddat.c, trivalues5)
-dobackgrounddat.c <- dobackgrounddat.c[,c(1:39,47,40:46)]
-colnames(dobackgrounddat.c)[40] <- "tri"
-
-coordinates(dobackgrounddat.c)<- ~long+ lat
-proj4string(dobackgrounddat.c) <- crs.geo
-r <- raster(dobackgrounddat.c)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-dobackgrounddat.c_sel <- as.data.frame(gridSample(dobackgrounddat.c, r, n=1))
-coordinates(dobackgrounddat.c_sel)<- ~long+ lat
-proj4string(dobackgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(dobackgrounddat.c_sel), col = 'orange', pch=20, cex=1)
+points(Mercator(dobackgrounddat.c), col = 'orange', pch=20, cex=1)
 points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 #===============DODECAPLOID=============#
 
 #===============GENERAL BACKGROUND=============#
 
-genbackground <- presvals2 [,c(1,2)]
-coordinates(genbackground)<- ~long+ lat
-proj4string(genbackground) <- crs.geo 
-
-mask <- raster(genbackground)
-res(mask) <- 0.008333333
-x <- circles(genbackground, d=75000, lonlat=TRUE)
-pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 10000, type='random', iter=25)
-extent(mask)<-extent(pol)
-cells <- cellFromXY(mask, samp)
-length(cells)
-cells <- unique(cells)
-length(cells)
-xy <- xyFromCell(mask, cells)
-xy <- as.data.frame(xy)
-coordinates(xy)<- ~x+ y
-proj4string(xy) <- crs.geo
-
-backgroundclim<-extract(variables,xy)
-backgroundsoil<-extract.list(xy, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-backgrounddat<-cbind("background",as.data.frame(xy),backgroundclim, backgroundsoil)
-backgrounddat<-backgrounddat[,-42]
-backgrounddat.c<-na.omit(backgrounddat)
-backgrounddat.c<-cbind(backgrounddat.c,apply(backgrounddat.c[,c(42:44)], 1, mean))
-backgrounddat.c<-backgrounddat.c[,-c(42:44)]
-colnames(backgrounddat.c)[48]<-"AWC"
-backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
-backgrounddat.c <- backgrounddat.c[,-48]
-backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
-colnames(backgrounddat.c)<-colnames(presvals2)
-coordinates(backgrounddat.c)<- ~long+ lat
+backgrounddat.c <- rbind (presvals2, as.data.frame(dibackgrounddat.c), as.data.frame(tebackgrounddat.c), as.data.frame(hebackgrounddat.c), as.data.frame(dobackgrounddat.c))
+backgrounddat.c$ploidy <- "background"
+coordinates(backgrounddat.c) <- ~long+ lat
 proj4string(backgrounddat.c) <- crs.geo
-trivalues<-extract(tri.ext,backgrounddat.c)
 
-#sustitucion de los valores tri por los del dataframe con NAs
-backgrounddat.c <- as.data.frame(backgrounddat.c)
-backgrounddat.c <- backgrounddat.c[,-40]
-backgrounddat.c <- cbind (backgrounddat.c, trivalues)
-backgrounddat.c <- backgrounddat.c[,c(1:39,47,40:46)]
-colnames(backgrounddat.c)[40] <- "tri"
-
-coordinates(backgrounddat.c)<- ~long+ lat
-proj4string(backgrounddat.c) <- crs.geo
-r <- raster(backgrounddat.c)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-backgrounddat.c_sel <- as.data.frame(gridSample(backgrounddat.c, r, n=1))
-coordinates(backgrounddat.c_sel)<- ~long+ lat
-proj4string(backgrounddat.c_sel) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(backgrounddat.c_sel), col = 'orange', pch=20)
+points(Mercator(backgrounddat.c), col = 'orange', pch=20, cex=1)
 points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 #===============GENERAL BACKGROUND=============#
@@ -454,7 +443,7 @@ selected2 <- correlations2$selected.var.cols
 todo.pca.2 <- todo.pca[,c(selected2)]
 
 todoploidy <- todo$ploidy
-w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))),rep(0,nrow(as.data.frame(dibackgrounddat.c))), rep(0,nrow(as.data.frame(tebackgrounddat.c))), rep(0,nrow(as.data.frame(hebackgrounddat.c))), rep(0,nrow(as.data.frame(dobackgrounddat.c))))
+w<-c(rep(0,nrow(presvals2)),rep(1,nrow(as.data.frame(backgrounddat.c))),rep(0,nrow(as.data.frame(dibackgrounddat.c))), rep(0,nrow(as.data.frame(tebackgrounddat.c))), rep(0,nrow(as.data.frame(hebackgrounddat.c))), rep(0,nrow(as.data.frame(dobackgrounddat.c))))
 
 pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
 gcol = c("blue", "red", "green", "yellow", "orange", "purple", "cyan", "black", "grey")
@@ -485,10 +474,10 @@ scores.bacte<- pcaback$li[row.bacte,]
 scores.bache<- pcaback$li[row.bache,]	
 scores.bacdo<- pcaback$li[row.bacdo,]	
 
-zdi<- ecospat.grid.clim.dyn (scores.clim, scores.clim, scores.di, R=100, th.sp = 0, th.env = 0)
-zte<- ecospat.grid.clim.dyn (scores.clim, scores.bacte, scores.te, R=10, th.sp = 0, th.env = 0)
-zhe<- ecospat.grid.clim.dyn (scores.clim, scores.bache, scores.he, R=10, th.sp = 0, th.env = 0)
-zdo<- ecospat.grid.clim.dyn (scores.clim, scores.bacdo, scores.do, R=10, th.sp = 0, th.env = 0)
+zdi<- ecospat.grid.clim.dyn (scores.clim, scores.bacdi, scores.di, R=10)
+zte<- ecospat.grid.clim.dyn (scores.clim, scores.bacte, scores.te, R=10)
+zhe<- ecospat.grid.clim.dyn (scores.clim, scores.bache, scores.he, R=10)
+zdo<- ecospat.grid.clim.dyn (scores.clim, scores.bacdo, scores.do, R=10)
 
 
 #ecospat (tests)
