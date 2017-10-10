@@ -27,3 +27,5 @@ witenc <- wca(pca1, backgroundploidy, scan = FALSE, nf = 2)
 library(phytools)
 phyl.pca(tree, Y, method="BM", mode="cov")
 
+### Phylogenetical signal Enviromental variables Abouheif’s C statistic tested the null hypothesis
+# that traits did not experience phylogenetic autocorrelation (based on the topology)
