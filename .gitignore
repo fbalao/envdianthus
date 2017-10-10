@@ -8,3 +8,4 @@
 .gitignore
 envdianthus.Rproj
 .~lock.rotation.tsv#
+environment.RData
