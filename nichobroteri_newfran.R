@@ -439,6 +439,7 @@ points(Mercator(presvalsdata), col=presvalsdata$ploidy, pch=20, cex=1)
 
 todo <- rbind (presvals2, as.data.frame(backgrounddat.c))
 todo.pca <- todo[,-c(1:3)]
+source("vif_fun.R")
 selected2<-vif_func(todo.pca)
 todo.pca.2 <- todo.pca[,c(selected2)]
 
