@@ -11,6 +11,11 @@ library(ggmap)
 library(spatstat)
 library(ecospat)
 
+install.packages("devtools")
+library(devtools)
+install_local("C:/Users/javie/Documents/R/ENMTools-master")
+library(ENMTools)
+
 
 #Datos de GBIF
 Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
@@ -26,7 +31,6 @@ gbifmap(todo, mapdatabase = "world", region = "Spain")
 todo <- todo[,-c(1,2,5)]
 todo_cleaned<- unique(todo)
 cooDbroterigbif<-cbind(todo_cleaned,1)
-colnames(cooDbroterigbif)[3]<-"ploidy"
 
 
 #Mapa
@@ -37,50 +41,45 @@ proj4string(cooDbroterigbif) <- crs.geo
 map<-plot(gmap(e, type = "satellite"))
 points<-points(Mercator(cooDbroterigbif), col = "red", pch=20, cex = 1.5)
 
-
+# Quitamos los puntos en el mismo km^2
+coordinates(cooDbroterigbif) <- ~decimalLongitude+ decimalLatitude
+proj4string(cooDbroterigbif) <- crs.geo
+r <- raster(cooDbroterigbif)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+coord_sel <- as.data.frame(gridSample(cooDbroterigbif, r, n=1))
+coord_sel <- cbind (coord_sel, 1)
+colnames(coord_sel)[3]<-"ploidy"
 
 
 
 #Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
-cooDbroterigbifdata<-as.data.frame(cooDbroterigbif)
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 38 & cooDbroterigbifdata$decimalLongitude > -9.5 & cooDbroterigbifdata$decimalLatitude < 39 & cooDbroterigbifdata$decimalLongitude < -8] <- "4x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 37 & cooDbroterigbifdata$decimalLongitude > -9 & cooDbroterigbifdata$decimalLatitude < 37.5 & cooDbroterigbifdata$decimalLongitude < -7.5] <- "2x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 36.9 & cooDbroterigbifdata$decimalLongitude > -7.4 & cooDbroterigbifdata$decimalLatitude < 37.6 & cooDbroterigbifdata$decimalLongitude < -6] <- "12x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 36 & cooDbroterigbifdata$decimalLongitude > -6.3 & cooDbroterigbifdata$decimalLatitude < 37.14 & cooDbroterigbifdata$decimalLongitude < -4.75] <- "4x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 36.5 & cooDbroterigbifdata$decimalLongitude > -4.75 & cooDbroterigbifdata$decimalLatitude < 38.1 & cooDbroterigbifdata$decimalLongitude < -1.67] <- "2x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 37.3 & cooDbroterigbifdata$decimalLongitude > -1.7 & cooDbroterigbifdata$decimalLatitude < 38.3 & cooDbroterigbifdata$decimalLongitude < -0.5] <- "6x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 38.2 & cooDbroterigbifdata$decimalLongitude > -2.33 & cooDbroterigbifdata$decimalLatitude < 38.83 & cooDbroterigbifdata$decimalLongitude < 0.33] <- "6x"
-cooDbroterigbifdata$ploidy[cooDbroterigbifdata$decimalLatitude > 38.83 & cooDbroterigbifdata$decimalLongitude > -1.7 & cooDbroterigbifdata$decimalLatitude < 40.9 & cooDbroterigbifdata$decimalLongitude < 0.38] <- "4x"
-#cooDbroterigbifdata$ploidy[c(16,311,324,405)] <- "1"
-#cooDbroterigbifdata$ploidy[369] <- "6x"
-#cooDbroterigbifdata$ploidy[c(16,285)] <- "4x"
-cooDbroterigbifdata<-cooDbroterigbifdata[cooDbroterigbifdata$ploidy!="1",]
+coord_sel$ploidy[coord_sel$decimalLatitude > 38 & coord_sel$decimalLongitude > -9.5 & coord_sel$decimalLatitude < 39 & coord_sel$decimalLongitude < -8] <- "4x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 37 & coord_sel$decimalLongitude > -9 & coord_sel$decimalLatitude < 37.5 & coord_sel$decimalLongitude < -7.5] <- "2x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 36.9 & coord_sel$decimalLongitude > -7.4 & coord_sel$decimalLatitude < 37.6 & coord_sel$decimalLongitude < -6] <- "12x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 36 & coord_sel$decimalLongitude > -6.3 & coord_sel$decimalLatitude < 37.14 & coord_sel$decimalLongitude < -4.75] <- "4x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 36.5 & coord_sel$decimalLongitude > -4.75 & coord_sel$decimalLatitude < 38.1 & coord_sel$decimalLongitude < -1.67] <- "2x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 37.3 & coord_sel$decimalLongitude > -1.7 & coord_sel$decimalLatitude < 38.3 & coord_sel$decimalLongitude < -0.5] <- "6x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 38.2 & coord_sel$decimalLongitude > -2.33 & coord_sel$decimalLatitude < 38.83 & coord_sel$decimalLongitude < 0.33] <- "6x"
+coord_sel$ploidy[coord_sel$decimalLatitude > 38.83 & coord_sel$decimalLongitude > -1.7 & coord_sel$decimalLatitude < 40.9 & coord_sel$decimalLongitude < 0.38] <- "4x"
+#coord_sel$ploidy[c(16,311,324,405)] <- "1"
+#coord_sel$ploidy[369] <- "6x"
+#coord_sel$ploidy[c(16,285)] <- "4x"
+cooDbroterigbifdata<-coord_sel[coord_sel$ploidy!="1",]
 
 cooDbroterigbifdata$ploidy<-factor(cooDbroterigbifdata$ploidy,levels = c("2x","4x","6x","12x","1"),ordered = TRUE)
+ploidy <- as.data.frame (cooDbroterigbifdata$ploidy)
 
-e <- extent (-10,3.5,35.5,44)
-coordinates(cooDbroterigbifdata)<- ~decimalLongitude+ decimalLatitude
-crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-proj4string(cooDbroterigbif) <- crs.geo
-map<-plot(gmap(e, type = "satellite"))
-points<-points(Mercator(cooDbroterigbifdata), col = cooDbroterigbifdata$ploidy, pch=20, cex = 1.5)
+coordinates(cooDbroterigbifdata) <- ~decimalLongitude+ decimalLatitude
+proj4string(cooDbroterigbifdata) <- crs.geo
+plot(gmap(e, type = "satellite"))
+points(Mercator(cooDbroterigbifdata), col=cooDbroterigbifdata$ploidy, pch=20, cex=1)
 
-#Eliminar Ocurrencias en el mismo km2. 
-# r <- raster(cooDbroterigbifdata)
-# res(r) <- 0.008333333
-# r <- extend(r, extent(r)+1)
-# cooDbroterigbifdata_sel <- as.data.frame(gridSample(cooDbroterigbifdata, r, n=1))
-# coordinates(cooDbroterigbifdata_sel)<- ~decimalLongitude+ decimalLatitude
-# proj4string(cooDbroterigbifdata_sel) <- crs.geo 
+#carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
+#extraccion de datos de las variables predictoras en las poblaciones
 
-cooDbroterigbifdata<-readRDS(file = "cooDbroterigbifdata.RDS")
+e <- extent (-10,3,35,42)
 
-
-
-
-
-
-#Extraccion de valores de variables predictoras
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
 che.c <- crop (chelsa,e)
@@ -119,290 +118,136 @@ soilgrids<-soilgrids[,-c(1:4)]
 colnames(soilgrids)[7]<-"AWC"
 soilgrids <- soilgrids[,c(7,1,2,3,4,5,6)]
 
-ploidy <- as.data.frame(cooDbroterigbifdata)[,3]
-ploidy <- as.data.frame (ploidy)
-coord <- as.data.frame(cooDbroterigbifdata)[,c(1,2)]
-coord <- as.data.frame (coord)
 
 presvals <- extract (variables, cooDbroterigbifdata)
-presvals <- cbind (coord, ploidy, presvals, soilgrids) 
+presvals <- cbind (ploidy, presvals, soilgrids) 
 presvals$PHIHOX <- presvals$PHIHOX/10
+
+#calculo del tri a partir de altitud con libreria spatialEco
 
 tri.ext <- tri(alt.m)
 projection(tri.ext) <- crs.geo 
 trivalues<-extract(tri.ext,cooDbroterigbifdata)
 
-presvals <- presvals[,-40]
+
+#sustitucion de los valores tri por los del dataframe con NAs
+presvals <- presvals[,-38]
 presvals <- cbind (presvals, trivalues)
-presvals <- presvals[,c(1:39,48,40:47)]
-colnames(presvals)[40] <- "tri"
+presvals <- presvals[,c(1:37,46,38:45)]
+colnames(presvals)[38] <- "tri"
 
-#pca
-presvals<-na.omit(presvals)
+cooDbroterigbifdata <- as.data.frame(cooDbroterigbifdata)
+presvals <- cbind (presvals, cooDbroterigbifdata)
+presvals <- presvals[,-1]
+presvals <- presvals[,c(46:48, 1:45)]
+presvals <- na.omit(presvals)
+presvals2 <- presvals[,-48]
 
-presvals.pca <- presvals[,-c(1,2,3,48)]
+#analisis para descartar variables muy correlacionadas
+#PCA de puntos de presencia con variables seleccionadas
+
+# colvar <- presvals[c(2:45)]
+# x <- cor(colvar, method="pearson")
+# ecospat.npred (x, th=0.70)
+
+presvals.pca <- presvals[,-c(1:3,48)]
 presvals.pca <- cbind (presvals.pca,1)
-correlations <- corSelect (presvals.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+correlations <- corSelect (presvals.pca, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.70)
 selected <- correlations$selected.var.cols 
 presvals.pca.2 <- presvals.pca[,c(selected)]
 
-ploidy2 <- presvals[,3]
-ploidy2 <- factor (ploidy2, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
+ploidy <- presvals$ploidy
+ploidy <- factor (ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 
 pca <- prcomp(presvals.pca.2, scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
-         groups = ploidy2, ellipse = TRUE, circle = FALSE, alpha =  1) +
+         groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
-  geom_point(aes(colour=ploidy2), size = 2) +
+  geom_point(aes(colour=ploidy), size = 3) +
   theme(legend.direction = 'vertical', legend.position = 'right')
 
 
-#autocorrelacion espacial
-# presvals.mantel <- presvals[,-48]
-# presvals.mantel <- cbind (presvals.mantel,0,0,0,0)
-# colnames(presvals.mantel)[48:51]<-c("2x","4x","6x","12x")
-# presvals.mantel$`2x`[presvals.mantel$ploidy=="2x"]<-1
-# presvals.mantel$`4x`[presvals.mantel$ploidy=="4x"]<-1
-# presvals.mantel$`6x`[presvals.mantel$ploidy=="6x"]<-1
-# presvals.mantel$`12x`[presvals.mantel$ploidy=="12x"]<-1
-# presvals.mantel <- presvals.mantel[,-3]
-# presvals.mantel <- presvals.mantel[,c(2,1,3:50)]
-# ecospat.mantel.correlogram(dfvar=presvals.mantel,colxy=1:2, n=500, colvar=3:46, 
-#                            max=1000, nclass=10, nperm=100)
+#PCA con todas las variables
+pca <- prcomp(presvals[,-c(1,46)], scale. = TRUE, retx = T)
+ggbiplot(pca, obs.scale = 1,var.scale = 1,
+         groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
+  scale_color_discrete(name = '') +
+  geom_point(aes(colour=ploidy), size = 3) +
+  theme(legend.direction = 'vertical', legend.position = 'right')
 
-presvals2 <- presvals[,-48]
-coordinates(presvals2)<- ~decimalLongitude+ decimalLatitude
-proj4string(presvals2) <- crs.geo 
 
-set.seed(110)
-mask <- raster(presvals2)
+
+#===============GENERAL BACKGROUND=============#
+backgroundcoord <- presvals [,c(1,2)]
+coordinates(backgroundcoord) <- ~decimalLongitude+ decimalLatitude
+proj4string(backgroundcoord) <- crs.geo
+
+
+mask <- raster(backgroundcoord)
 res(mask) <- 0.008333333
-x <- circles(presvals2, d=1000, lonlat=TRUE)
-#Se podría hacer un clip de los poligonos y el continente para que no salgan puntos en el mar , solucion provisional aumentar el N
+x <- circles(backgroundcoord, d=50000, lonlat=TRUE)
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 500, type='random', iter=25)
-extent(mask)<-extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
+samp <- spsample(pol, 5000, type='random', iter=25)
+extent(mask) <- extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
 cells <- unique(cells)
 length(cells)
 xy <- xyFromCell(mask, cells)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
 xy <- as.data.frame(xy)
-coordinates(xy)<- ~x+ y
+colnames(xy) <- c("decimalLongitude", "decimalLatitude")
+
+# Quitamos los puntos en el mismo km^2
+coordinates(xy) <- ~decimalLongitude+ decimalLatitude
 proj4string(xy) <- crs.geo
+r <- raster(xy)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+backcoord_sel <- as.data.frame(gridSample(xy, r, n=1))
+coordinates(backcoord_sel) <- ~decimalLongitude+ decimalLatitude
+proj4string(backcoord_sel) <- crs.geo
 
-plot(pol)
-points(xy)
+# Extraccion de variables para el background y modificacion de la tabla
+backgroundclim <- extract(variables,backcoord_sel)
+backgroundsoil <- extract.list(backcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+backgrounddat <- cbind("background",as.data.frame(backcoord_sel),backgroundclim, backgroundsoil)
+backgrounddat <- backgrounddat[,-42]
 
-ploidy <- as.data.frame (ploidy)
-plot(gmap(e, type = "satellite"))
-points(Mercator(xy), col = 'blue', pch=20)
-mycols <- c("black", "green", "red", "white")
-palette(mycols)
-points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+coordinates(backgrounddat) <- ~decimalLongitude+ decimalLatitude
+proj4string(backgrounddat) <- crs.geo
+trivalues1 <- extract(tri.ext,backgrounddat)
+backgrounddat <- as.data.frame(backgrounddat)
+backgrounddat <- backgrounddat[,-40]
+backgrounddat <- cbind (backgrounddat, trivalues1)
+backgrounddat <- backgrounddat[,c(1:39,50,40:49)]
+colnames(backgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
 
-presvalsdata <- as.data.frame(presvals2)
-#presvalsdata <- presvalsdata[,c(46,47,1:45)]
-
-backgroundclim<-extract(variables,xy)
-backgroundsoil<-extract.list(xy, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-backgrounddat<-cbind("background",as.data.frame(xy),backgroundclim, backgroundsoil)
-backgrounddat<-backgrounddat[,-42]
-backgrounddat.c<-na.omit(backgrounddat)
-backgrounddat.c<-cbind(backgrounddat.c,apply(backgrounddat.c[,c(42:44)], 1, mean))
-backgrounddat.c<-backgrounddat.c[,-c(42:44)]
-colnames(backgrounddat.c)[48]<-"AWC"
+backgrounddat.c <- na.omit(backgrounddat)
+backgrounddat.c <- cbind(backgrounddat.c,apply(backgrounddat.c[,c(42:44)], 1, mean))
+backgrounddat.c <- backgrounddat.c[,-c(42:44)]
+colnames(backgrounddat.c)[48] <- "AWC"
 backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
 backgrounddat.c <- backgrounddat.c[,-48]
 backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
-colnames(backgrounddat.c)<-colnames(presvalsdata)
+colnames(backgrounddat.c) <- colnames(presvals2)
 
-#puntos background corregidos (quitando los NA de coordenadas en el mar)
-coordinates(backgrounddat.c)<- ~long+ lat
+# Representacion de los puntos en el mapa alrededor de los de presencia
+coordinates(backgrounddat.c) <- ~decimalLongitude+ decimalLatitude
 proj4string(backgrounddat.c) <- crs.geo
+coordinates(presvals) <- ~decimalLongitude+ decimalLatitude
+proj4string(presvals) <- crs.geo
+
 plot(gmap(e, type = "satellite"))
-points(Mercator(backgrounddat.c), col = 'blue', pch=20)
-mycols <- c("black", "green", "red", "white")
-palette(mycols)
-points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
+points(Mercator(backgrounddat.c), col = 'orange', pch=20, cex=1)
+points(Mercator(presvals), col=presvals$ploidy, pch=20, cex=1)
 
+#===============GENERAL BACKGROUND=============#
 
+#===============PCA BACKGROUND=============#
 
-#background data (x ploidy)
-diploid <- as.data.frame(cooDbroterigbifdata)
-diploid$ploidy <- factor (diploid$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
-diploid <- diploid[diploid$ploidy=="2x",]
-tetraploid <- as.data.frame(cooDbroterigbifdata)
-tetraploid$ploidy <- factor (tetraploid$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
-tetraploid <- tetraploid[tetraploid$ploidy=="4x",]
-hexaploid <- as.data.frame(cooDbroterigbifdata)
-hexaploid$ploidy <- factor (hexaploid$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
-hexaploid <- hexaploid[hexaploid$ploidy=="6x",]
-dodecaploid <- as.data.frame(cooDbroterigbifdata)
-dodecaploid$ploidy <- factor (dodecaploid$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
-dodecaploid <- dodecaploid[dodecaploid$ploidy=="12x",] 
-
-coordinates(diploid)<- ~decimalLongitude+ decimalLatitude
-proj4string(diploid) <- crs.geo 
-coordinates(tetraploid)<- ~decimalLongitude+ decimalLatitude
-proj4string(tetraploid) <- crs.geo 
-coordinates(hexaploid)<- ~decimalLongitude+ decimalLatitude
-proj4string(hexaploid) <- crs.geo 
-coordinates(dodecaploid)<- ~decimalLongitude+ decimalLatitude
-proj4string(dodecaploid) <- crs.geo 
-
-
-#===============DIPLOID=============#
-maskdi <- raster(diploid)
-res(maskdi) <- 0.008333333
-xdi <- circles(diploid, d=1000, lonlat=TRUE)
-poldi <- gUnaryUnion(xdi@polygons)
-sampdi <- spsample(poldi, 100, type='random', iter=25)
-extent(maskdi)<-extent(poldi)
-cellsdi <- cellFromXY(maskdi, sampdi)
-length(cellsdi)
-cellsdi <- unique(cellsdi)
-length(cellsdi)
-xydi <- xyFromCell(maskdi, cellsdi)
-xydi <- as.data.frame(xydi)
-coordinates(xydi)<- ~x+ y
-proj4string(xydi) <- crs.geo
-
-dibackgroundclim<-extract(variables,xydi)
-dibackgroundsoil<-extract.list(xydi, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-dibackgrounddat<-cbind("dibackground",as.data.frame(xydi),dibackgroundclim, dibackgroundsoil)
-dibackgrounddat<-dibackgrounddat[,-42]
-dibackgrounddat.c<-na.omit(dibackgrounddat)
-dibackgrounddat.c<-cbind(dibackgrounddat.c,apply(dibackgrounddat.c[,c(42:44)], 1, mean))
-dibackgrounddat.c<-dibackgrounddat.c[,-c(42:44)]
-colnames(dibackgrounddat.c)[48]<-"AWC"
-dibackgrounddat.c <- dibackgrounddat.c[,c(1:41,48,42:47)]
-dibackgrounddat.c <- dibackgrounddat.c[,-48]
-dibackgrounddat.c <- dibackgrounddat.c[,c(2,3,1,4:47)]
-colnames(dibackgrounddat.c)<-colnames(presvalsdata)
-
-coordinates(dibackgrounddat.c)<- ~decimalLongitude+ decimalLatitude
-proj4string(dibackgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(dibackgrounddat.c), col = 'blue', pch=20)
-points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
-
-#===============DIPLOID=============#
-
-
-#===============TETRAPLOID=============#
-
-maskte <- raster(tetraploid)
-res(maskte) <- 0.008333333
-xte <- circles(tetraploid, d=1000, lonlat=TRUE)
-polte <- gUnaryUnion(xte@polygons)
-sampte <- spsample(polte, 100, type='random', iter=25)
-extent(maskte)<-extent(polte)
-cellste <- cellFromXY(maskte, sampte)
-length(cellste)
-cellste <- unique(cellste)
-length(cellste)
-xyte <- xyFromCell(maskte, cellste)
-xyte <- as.data.frame(xyte)
-coordinates(xyte)<- ~x+ y
-proj4string(xyte) <- crs.geo
-
-tebackgroundclim<-extract(variables,xyte)
-tebackgroundsoil<-extract.list(xyte, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-tebackgrounddat<-cbind("tebackground",as.data.frame(xyte),tebackgroundclim, tebackgroundsoil)
-tebackgrounddat<-tebackgrounddat[,-42]
-tebackgrounddat.c<-na.omit(tebackgrounddat)
-tebackgrounddat.c<-cbind(tebackgrounddat.c,apply(tebackgrounddat.c[,c(42:44)], 1, mean))
-tebackgrounddat.c<-tebackgrounddat.c[,-c(42:44)]
-colnames(tebackgrounddat.c)[48]<-"AWC"
-tebackgrounddat.c <- tebackgrounddat.c[,c(1:41,48,42:47)]
-tebackgrounddat.c <- tebackgrounddat.c[,-48]
-tebackgrounddat.c <- tebackgrounddat.c[,c(2,3,1,4:47)]
-colnames(tebackgrounddat.c)<-colnames(presvalsdata)
-
-coordinates(tebackgrounddat.c)<- ~decimalLongitude+ decimalLatitude
-proj4string(tebackgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(tebackgrounddat.c), col = 'blue', pch=20)
-
-#===============TETRAPLOID=============#
-
-#===============HEXAPLOID=============#
-
-maskhe <- raster(hexaploid)
-res(maskhe) <- 0.008333333
-xhe <- circles(hexaploid, d=1000, lonlat=TRUE)
-polhe <- gUnaryUnion(xhe@polygons)
-samphe <- spsample(polhe, 100, type='random', iher=25)
-extent(maskhe)<-extent(polhe)
-cellshe <- cellFromXY(maskhe, samphe)
-length(cellshe)
-cellshe <- unique(cellshe)
-length(cellshe)
-xyhe <- xyFromCell(maskhe, cellshe)
-xyhe <- as.data.frame(xyhe)
-coordinates(xyhe)<- ~x+ y
-proj4string(xyhe) <- crs.geo
-
-hebackgroundclim<-extract(variables,xyhe)
-hebackgroundsoil<-extract.list(xyhe, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-hebackgrounddat<-cbind("hebackground",as.data.frame(xyhe),hebackgroundclim, hebackgroundsoil)
-hebackgrounddat<-hebackgrounddat[,-42]
-hebackgrounddat.c<-na.omit(hebackgrounddat)
-hebackgrounddat.c<-cbind(hebackgrounddat.c,apply(hebackgrounddat.c[,c(42:44)], 1, mean))
-hebackgrounddat.c<-hebackgrounddat.c[,-c(42:44)]
-colnames(hebackgrounddat.c)[48]<-"AWC"
-hebackgrounddat.c <- hebackgrounddat.c[,c(1:41,48,42:47)]
-hebackgrounddat.c <- hebackgrounddat.c[,-48]
-hebackgrounddat.c <- hebackgrounddat.c[,c(2,3,1,4:47)]
-colnames(hebackgrounddat.c)<-colnames(presvalsdata)
-
-coordinates(hebackgrounddat.c)<- ~decimalLongitude+ decimalLatitude
-proj4string(hebackgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(hebackgrounddat.c), col = 'blue', pch=20)
-
-#===============HEXAPLOID=============#
-
-
-#===============DODECAPLOID=============#
-
-maskdo <- raster(dodecaploid)
-res(maskdo) <- 0.008333333
-xdo <- circles(dodecaploid, d=1000, lonlat=TRUE)
-poldo <- gUnaryUnion(xdo@polygons)
-sampdo <- spsample(poldo, 100, type='random', idor=25)
-extent(maskdo)<-extent(poldo)
-cellsdo <- cellFromXY(maskdo, sampdo)
-length(cellsdo)
-cellsdo <- unique(cellsdo)
-length(cellsdo)
-xydo <- xyFromCell(maskdo, cellsdo)
-xydo <- as.data.frame(xydo)
-coordinates(xydo)<- ~x+ y
-proj4string(xydo) <- crs.geo
-
-dobackgroundclim<-extract(variables,xydo)
-dobackgroundsoil<-extract.list(xydo, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
-dobackgrounddat<-cbind("dobackground",as.data.frame(xydo),dobackgroundclim, dobackgroundsoil)
-dobackgrounddat<-dobackgrounddat[,-42]
-dobackgrounddat.c<-na.omit(dobackgrounddat)
-dobackgrounddat.c<-cbind(dobackgrounddat.c,apply(dobackgrounddat.c[,c(42:44)], 1, mean))
-dobackgrounddat.c<-dobackgrounddat.c[,-c(42:44)]
-colnames(dobackgrounddat.c)[48]<-"AWC"
-dobackgrounddat.c <- dobackgrounddat.c[,c(1:41,48,42:47)]
-dobackgrounddat.c <- dobackgrounddat.c[,-48]
-dobackgrounddat.c <- dobackgrounddat.c[,c(2,3,1,4:47)]
-colnames(dobackgrounddat.c)<-colnames(presvalsdata)
-
-coordinates(dobackgrounddat.c)<- ~decimalLongitude+ decimalLatitude
-proj4string(dobackgrounddat.c) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(dobackgrounddat.c), col = 'blue', pch=20)
-
-#===============DODECAPLOID=============#
-
-todo <- rbind (presvalsdata, as.data.frame(backgrounddat.c), as.data.frame(dibackgrounddat.c), as.data.frame(tebackgrounddat.c), as.data.frame(hebackgrounddat.c), as.data.frame(dobackgrounddat.c))
+todo <- rbind (presvals2, as.data.frame(backgrounddat.c))
 
 todo.pca <- todo[,-c(1:3)]
 todo.pca <- cbind (todo.pca,1)
@@ -411,13 +256,14 @@ selected2 <- correlations2$selected.var.cols
 todo.pca.2 <- todo.pca[,c(selected2)]
 
 todoploidy <- todo$ploidy
+w<-c(rep(0,nrow(presvals2)),rep(1,nrow(as.data.frame(backgrounddat.c))))
 
-pcaback <- prcomp(todo.pca.2, scale. = TRUE, retx = T)
-ggbiplot(pcaback, obs.scale = 1,var.scale = 1,
-         groups = todoploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
-  scale_color_discrete(name = '') +
-  geom_point(aes(colour=todoploidy), size = 2) +
-  theme(legend.direction = 'vertical', legend.position = 'right')
+pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
+gcol = c("blue", "red", "green", "yellow", "orange")
+s.label(pcaback$li, clabel = 0.1)
+scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
+s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
+
 
 #===============ECOSPAT=============#
 
@@ -426,32 +272,28 @@ row.te<-which(todo[,3] == "4x")
 row.he<-which(todo[,3] == "6x")
 row.do<-which(todo[,3] == "12x")
 row.back<-which(todo[,3] == "background") 
-row.bacdi<-which(todo[,3] == "dibackground") 
-row.bacte<-which(todo[,3] == "tebackground")
-row.bache<-which(todo[,3] == "hebackground")
-row.bacdo<-which(todo[,3] == "dobackground")
 
-scores.clim<- pcaback$x[row.back,1:2] 
-scores.di<- pcaback$x[row.di,1:2]		
-scores.te<- pcaback$x[row.te,1:2]	
-scores.he<- pcaback$x[row.he,1:2]	
-scores.do<- pcaback$x[row.do,1:2]	
-scores.bacdi<- pcaback$x[row.bacdi,1:2]					
-scores.bacte<- pcaback$x[row.bacte,1:2]	
-scores.bache<- pcaback$x[row.bache,1:2]	
-scores.bacdo<- pcaback$x[row.bacdo,1:2]	
 
-zdi<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdi, scores.di, R=100, th.sp = 0.05, th.env = 0.05)
-zte<- ecospat.grid.clim.dyn2(scores.clim, scores.bacte, scores.te, R=100, th.sp = 0.05, th.env = 0.05)
-zhe<- ecospat.grid.clim.dyn2(scores.clim, scores.bache, scores.he, R=100, th.sp = 0.05, th.env = 0.05)
-zdo<- ecospat.grid.clim.dyn2(scores.clim, scores.bacdo, scores.do, R=100, th.sp = 0.05, th.env = 0.05)
+scores.clim<- pcaback$li 
+scores.di<- pcaback$li[row.di,]		
+scores.te<- pcaback$li[row.te,]	
+scores.he<- pcaback$li[row.he,]	
+scores.do<- pcaback$li[row.do,]	
 
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 1000, alternative = "lower",ncores=1)
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 1000, alternative = "lower",ncores=1)
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 1000, alternative = "lower",ncores=1)
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 1000, alternative = "lower",ncores=1)
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 1000, alternative = "lower",ncores=1)
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 1000, alternative = "lower",ncores=1)
+
+zdi<- ecospat.grid.clim.dyn (scores.clim, scores.clim, scores.di, R=100)
+zte<- ecospat.grid.clim.dyn (scores.clim, scores.clim, scores.te, R=100)
+zhe<- ecospat.grid.clim.dyn (scores.clim, scores.clim, scores.he, R=100)
+zdo<- ecospat.grid.clim.dyn (scores.clim, scores.clim, scores.do, R=100)
+
+
+#ecospat (tests)
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower")
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower")
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower")
 
 overlap.test.dite<-ecospat.niche.overlap (zdi, zte, cor=FALSE)
 overlap.test.dihe<-ecospat.niche.overlap (zdi, zhe, cor=FALSE)
@@ -461,7 +303,24 @@ overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 ecospat.plot.niche.dyn (zhe, zdo, quant = 0.75)
+ecospat.plot.niche (zdi)
+ecospat.plot.niche (zte)
+ecospat.plot.niche (zhe)
+ecospat.plot.niche (zdo)
 
-niche.dyn <- ecospat.niche.dyn.index(zdi, zte, intersection=0.05)
-ecospat.plot.niche.dyn (zdi, zte, quant = 0.75)
-ecospat.shift.centroids(scores.di, scores.te, scores.bacdi,scores.bacte)
+
+similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
+similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
+similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
+similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater")
+similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "lower")
+similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "lower")
+similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "lower")
+similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "lower")
+similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "lower")
+similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "lower")
+similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "lower")
+similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "lower")
+
+
+raster.breadth (zdi)
