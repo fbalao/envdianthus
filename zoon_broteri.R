@@ -16,6 +16,7 @@ soilgrids <- stack (soilfiles)
 soil.c <- crop (soilgrids,e)
 
 projection (vars.c) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+extent (vars.c) <- c(-10.00003, 2.999971, 34.99918, 43.99917)
 combras <- CombineRasters(vars.c, soil.c)
 vars.stack <- stack (combras [[1]], combras [[2]])
 
@@ -39,6 +40,7 @@ soilgrids2 <- stack (soilfiles2)
 soil.c2 <- crop (soilgrids2,e)
 
 projection (vars.c2) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+extent (vars.c2) <- c(-10.00003, 2.999971, 34.99918, 43.99917)
 combras2 <- CombineRasters(vars.c2, soil.c2)
 vars.stack2 <- stack (combras2 [[1]], combras2 [[2]])
 
