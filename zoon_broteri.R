@@ -7,18 +7,23 @@ library(zoon)
 dbroteri <- read.csv2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv")
 
 e <- extent (-10,3,35,44)
-varsfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops", pattern = c(".bil", ".tif"), full.names = TRUE))
-variables <- stack (varsfiles)
-vars.c <- crop (variables,e)
+chefiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/chelsa", pattern = ".tif", full.names = TRUE))
+chelsa <- stack (chefiles)
+che.c <- crop (chelsa,e)
+
+envfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/envirem", pattern = ".bil", full.names = TRUE))
+envirem <- stack (envfiles)
+env.c <- crop (envirem,e)
 
 soilfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/soil", pattern = ".tif", full.names = TRUE))
 soilgrids <- stack (soilfiles)
 soil.c <- crop (soilgrids,e)
 
-projection (vars.c) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-extent (vars.c) <- c(-10.00003, 2.999971, 34.99918, 43.99917)
-combras <- CombineRasters(vars.c, soil.c)
-vars.stack <- stack (combras [[1]], combras [[2]])
+projection (che.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+projection (env.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+projection (soil.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+combras <- CombineRasters(c(che.c, env.c, soil.c))
+vars.stack <- stack (combras [[1]], combras [[2]], combras [[3]])
 
 work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
                   covariate  = LocalRaster(vars.stack),
@@ -31,23 +36,28 @@ work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguri
 
 #==================GBIF=====================#
 
-varsfiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif", pattern = c(".bil", ".tif"), full.names = TRUE))
-variables2 <- stack (varsfiles2)
-vars.c2 <- crop (variables2,e)
+chefiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif/chelsa", pattern = ".tif", full.names = TRUE))
+chelsa2 <- stack (chefiles2)
+che.c2 <- crop (chelsa2,e)
+
+envfiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif/envirem", pattern = ".bil", full.names = TRUE))
+envirem2 <- stack (envfiles2)
+env.c2 <- crop (envirem2,e)
 
 soilfiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif/soil", pattern = ".tif", full.names = TRUE))
 soilgrids2 <- stack (soilfiles2)
 soil.c2 <- crop (soilgrids2,e)
 
-projection (vars.c2) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-extent (vars.c2) <- c(-10.00003, 2.999971, 34.99918, 43.99917)
-combras2 <- CombineRasters(vars.c2, soil.c2)
-vars.stack2 <- stack (combras2 [[1]], combras2 [[2]])
+projection (che.c2) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+projection (env.c2) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+projection (soil.c2) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
+combras2 <- CombineRasters(c(che.c2, env.c2, soil.c2))
+vars.stack2 <- stack (combras2 [[1]], combras2 [[2]], combras2 [[3]])
 
-work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
-                  covariate  = LocalRaster(vars.stack2),
-                  process    = Background (n = 1000, bias = 50),
-                  model      = MaxEnt,
-                  output     = PrintMap)
+work2 <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
+                   covariate  = LocalRaster(vars.stack2),
+                   process    = Background (n = 1000, bias = 50),
+                   model      = MaxEnt,
+                   output     = PrintMap)
 
 #==================GBIF=====================#
