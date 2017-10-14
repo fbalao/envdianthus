@@ -147,10 +147,10 @@ proj4string(backgroundcoord) <- crs.geo
 
 mask <- raster(backgroundcoord)
 res(mask) <- 0.008333333
-x <- circles(backgroundcoord, d=75000, lonlat=TRUE)
+x <- circles(backgroundcoord, d=50000, lonlat=TRUE)
 #Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 5000, type='random', iter=25)
+samp <- spsample(pol, 1000, type='random', iter=25)
 extent(mask) <- extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -250,12 +250,12 @@ ecospat.plot.niche.dyn (zdi, zte, quant = 0.75)
 
 
 #EQUIVALENCY TEST
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 1000, alternative = "lower")
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 1000, alternative = "lower")
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 1000, alternative = "lower")
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 1000, alternative = "lower")
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 1000, alternative = "lower")
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 1000, alternative = "lower")
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower")
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower")
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower")
 
 
 #OVERLAP TEST
@@ -268,18 +268,18 @@ overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
 #SIMILARITY TEST
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 1000, alternative = "lower")
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 1000, alternative = "lower")
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 1000, alternative = "lower")
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 1000, alternative = "lower")
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 1000, alternative = "lower")
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 1000, alternative = "lower")
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 1000, alternative = "lower")
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 1000, alternative = "lower")
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 1000, alternative = "lower")
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 1000, alternative = "lower")
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 1000, alternative = "lower")
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 1000, alternative = "lower")
+similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "lower")
+similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "lower")
+similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "lower")
+similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "lower")
+similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "lower")
+similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "lower")
+similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "lower")
+similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "lower")
+similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "lower")
+similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "lower")
+similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "lower")
+similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "lower")
 
 
 #NICHE BREADTH
