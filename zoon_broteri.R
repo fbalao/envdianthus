@@ -1,38 +1,51 @@
 library(gtools)
 library(rgdal)
 library(zoon)
-library(spThin)
 
+#==================POPULATIONS=====================#
 
 dbroteri <- read.csv2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv")
 
 e <- extent (-10,3,35,44)
-chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
-chelsa <- stack (chelsafiles)
-che.c <- crop (chelsa,e)
+varsfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops", pattern = c(".bil", ".tif"), full.names = TRUE))
+variables <- stack (varsfiles)
+vars.c <- crop (variables,e)
 
-enviremfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/envirem", pattern = ".bil", full.names = TRUE))
-envirem <- stack (enviremfiles)
-env.c <- crop (envirem, e)
+soilfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/soil", pattern = ".tif", full.names = TRUE))
+soilgrids <- stack (soilfiles)
+soil.c <- crop (soilgrids,e)
 
-alt15files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_15", pattern = ".bil", full.names = TRUE))
-alt16files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_16", pattern = ".bil", full.names = TRUE))
-alt15 <- stack (alt15files)
-alt16 <- stack (alt16files)
-alt.m <- merge (alt15, alt16, ext=e)
-
-soilgridsfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", pattern = ".tif", full.names = TRUE))
-soilgrids <- stack (soilgridsfiles)
-soil.c <- crop (soilgrids, e) 
-
-
-crs (env.c) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-crs (alt.m) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-variables0 <- CombineRasters (list(che.c, env.c, alt.m, soil.c))
-varsstack <- stack(variables0[[1]], variables0[[2]], variables0[[3]], variables0[[4]])
+projection (vars.c) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+combras <- CombineRasters(vars.c, soil.c)
+vars.stack <- stack (combras [[1]], combras [[2]])
 
 work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
-                  covariate  = LocalRaster(varsstack),
+                  covariate  = LocalRaster(vars.stack),
                   process    = Background (n = 1000, bias = 50),
                   model      = MaxEnt,
                   output     = PrintMap)
+
+#==================POPULATIONS=====================#
+
+
+#==================GBIF=====================#
+
+varsfiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif", pattern = c(".bil", ".tif"), full.names = TRUE))
+variables2 <- stack (varsfiles2)
+vars.c2 <- crop (variables2,e)
+
+soilfiles2 <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_gbif/soil", pattern = ".tif", full.names = TRUE))
+soilgrids2 <- stack (soilfiles2)
+soil.c2 <- crop (soilgrids2,e)
+
+projection (vars.c2) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+combras2 <- CombineRasters(vars.c2, soil.c2)
+vars.stack2 <- stack (combras2 [[1]], combras2 [[2]])
+
+work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
+                  covariate  = LocalRaster(vars.stack2),
+                  process    = Background (n = 1000, bias = 50),
+                  model      = MaxEnt,
+                  output     = PrintMap)
+
+#==================GBIF=====================#
