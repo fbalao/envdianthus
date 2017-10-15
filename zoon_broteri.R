@@ -4,8 +4,6 @@ library(zoon)
 
 #==================POPULATIONS=====================#
 
-dbroteri <- read.csv2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv")
-
 e <- extent (-10,3,35,44)
 chefiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chefiles)
@@ -54,7 +52,7 @@ projection (soil.c2) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
 combras2 <- CombineRasters(c(che.c2, env.c2, soil.c2))
 vars.stack2 <- stack (combras2 [[1]], combras2 [[2]], combras2 [[3]])
 
-work2 <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
+work2 <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroterigbif.csv"),
                    covariate  = LocalRaster(vars.stack2),
                    process    = Background (n = 1000, bias = 50),
                    model      = MaxEnt,
