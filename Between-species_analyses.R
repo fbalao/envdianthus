@@ -29,3 +29,15 @@ phyl.pca(tree, Y, method="BM", mode="cov")
 
 ### Phylogenetical signal Enviromental variables Abouheif’s C statistic tested the null hypothesis
 # that traits did not experience phylogenetic autocorrelation (based on the topology)
+
+library(phytools)
+tree<-read.nexus("tree.nex")
+plot(tree)
+orden<-tree$tip.label # este es el orden de las poblaciones para los valores del PCA
+#Extraer los valores del PCA -> PCA1values, PCA2values, PCA3values?
+
+
+phylosig(tree,PCA1values,method="lambda",test=TRUE, nsim=100000)
+phylosig(tree,PCA1values,method="K",test=TRUE, nsim=100000)
+phylosig(tree,PCA2values,method="labda",test=TRUE, nsim=100000)
+phylosig(tree,PCA2values,method="K",test=TRUE, nsim=100000)
