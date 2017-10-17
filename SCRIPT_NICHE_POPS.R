@@ -226,6 +226,50 @@ s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0
 
 #===============PHYTOOLS=============#
 
+dbroteri_arbol <- read.delim2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/Poblaciones_Nicho_arbol.csv", sep = ";", fileEncoding = "latin1", colClasses = c("factor", "factor", "numeric", "numeric"))
+ploidy_arbol <- dbroteri_arbol[,2]
+ploidy_arbol <- as.data.frame (ploidy_arbol)
+coordinates(dbroteri_arbol) <- ~long+ lat
+proj4string(dbroteri_arbol) <- crs.geo
+
+soilgrids_arbol<-extract.list(dbroteri_arbol, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+colnames (soilgrids_arbol) <- c("ploidy","AWCh1","AWCh2","AWCh3","BLDFIE","CECSOL","ORCDRC","PHIHOX","SNDPPT","TEXMHT")
+soilgrids_arbol$ploidy<-factor(soilgrids_arbol$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="1","clay")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="2","silty clay")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="3","sandy clay")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="4","clay loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="5","silty clay loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="6","sandy clay loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="7","loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="8","silty loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="9","sandy loam")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="10","silt")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="11","loamy sand")
+soilgrids_arbol$TEXMHT<-replace(soilgrids_arbol$TEXMHT,soilgrids_arbol$TEXMHT=="12","sand")
+soilgrids_arbol$TEXMHT<-factor(soilgrids_arbol$TEXMHT,levels = c("clay", "silty clay", "sandy clay", "clay loam","silty clay loam","sandy clay loam","loam","silty loam","sandy loam","silt","loamy sand","sand"))
+soilgrids_arbol<-cbind(soilgrids_arbol,apply(soilgrids_arbol[,c(2:4)], 1, mean))
+soilgrids_arbol<-soilgrids_arbol[,-c(1:4)]
+colnames(soilgrids_arbol)[7]<-"AWC"
+soilgrids_arbol <- soilgrids_arbol[,c(7,1,2,3,4,5,6)]
+
+presvals_arbol <- extract (variables, dbroteri_arbol)
+presvals_arbol <- cbind (ploidy_arbol, presvals_arbol, soilgrids_arbol) 
+presvals_arbol$PHIHOX <- presvals_arbol$PHIHOX/10
+
+#calculo del tri a partir de altitud con libreria spatialEco
+
+tri.ext <- tri(alt.m)
+projection(tri.ext) <- crs.geo 
+trivalues_arbol<-extract(tri.ext,dbroteri_arbol)
+
+presvals_arbol <- presvals_arbol[,-38]
+presvals_arbol <- cbind (presvals_arbol, trivalues_arbol)
+presvals_arbol <- presvals_arbol[,c(1:37,46,38:45)]
+colnames(presvals_arbol)[38] <- "tri"
+
+
+
 #### Phylogenetic PCA (e.g., Revell 2009; Evolution)
 
 phyl.pca(tree, Y, method="BM", mode="cov")
