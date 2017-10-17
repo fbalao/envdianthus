@@ -8,7 +8,7 @@ library (rgeos)
 library (gtools)
 # library (maps)
 # library (ggmap)
-# library (fuzzySim)
+library (fuzzySim)
 # library (ade4)
 # library (pcaMethods)
 library (ecospat)
@@ -113,10 +113,15 @@ presvals.pca <- presvals[,-c(1,46)]
 selected <- vif_func(presvals.pca) 
 presvals.pca.2 <- presvals.pca[,c(selected)]
 
+# presvals.pca.corselect <- cbind (presvals.pca,1)
+# correlations <- corSelect (presvals.pca.corselect, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+# presvals.pca.2.corselect <- presvals.pca.corselect[,correlations$selected.var.cols]
+
+
 ploidy <- ploidy$ploidy
 ploidy <- factor (ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 
-pca <- prcomp(presvals.pca.2, scale. = TRUE, retx = T)
+pca <- prcomp(presvals.pca.2.corselect, scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
          groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
@@ -214,10 +219,14 @@ todo.pca <- todo[,-c(1:3)]
 selected2<-vif_func(todo.pca)
 todo.pca.2 <- todo.pca[,c(selected2)]
 
+# presvals.pca.corselect2 <- cbind (todo.pca,1)
+# correlations2 <- corSelect (presvals.pca.corselect2, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+# presvals.pca.2.corselect2 <- presvals.pca.corselect2[,correlations2$selected.var.cols]
+
 todoploidy <- todo$ploidy
 w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))))
 
-pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
+pcaback <-dudi.pca(presvals.pca.2.corselect2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
 gcol = c("blue", "red", "green", "yellow", "orange")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
