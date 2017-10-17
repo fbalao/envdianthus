@@ -38,7 +38,7 @@ library (phytools)
 dbroteri <- read.delim2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/Poblaciones_Nicho.csv", sep = ";", fileEncoding = "latin1", colClasses = c("factor", "factor", "numeric", "numeric"))
 ploidy <- dbroteri[,2]
 ploidy <- as.data.frame (ploidy)
-rownames (ploidy) <- c("Monte Clerigo","Sao Bras de Alportel","Zafarraya 1","Zafarraya 2","Orgiva","Laroles","Lliria","Troia","Comporta","Donana (Peladillo)","Albufera de Valencia","Alcublas","Azuebar","Sierra de Espadan","Chiclana","Ronda","Calblanque (Cabezo de la Fuente)","Socovos","Cartagena","San Miguel de Salinas","Penon de Ifach","Valverde del Camino","Moguer","Hinojos","Donana (Acebron)","Donana (Puntal)","Huertos del Batan","Isla Cristina (Las Palmeritas)")
+rownames (ploidy) <- c("Monte Clerigo","Sao Bras de Alportel","Zafarraya 1","Zafarraya 2","Orgiva","Laroles","Lliria","Troia","Comporta","Donana (Peladillo)","Albufera de Valencia","Albufera de Valencia 2","Alcublas","Azuebar","Sierra de Espadan","Chiclana","Ronda","Calblanque (Cabezo de la Fuente)","Socovos","Cartagena","San Miguel de Salinas","Penon de Ifach","Valverde del Camino","Moguer","Hinojos","Donana (Acebron)","Donana (Puntal)","Huertos del Batan","Isla Cristina (Las Palmeritas)")
 coordinates (dbroteri) <- ~long + lat
 crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
 proj4string (dbroteri) <- crs.geo
@@ -268,7 +268,11 @@ presvals_arbol <- cbind (presvals_arbol, trivalues_arbol)
 presvals_arbol <- presvals_arbol[,c(1:37,46,38:45)]
 colnames(presvals_arbol)[38] <- "tri"
 
+presvals.pca_arbol <- presvals_arbol[,-c(1,46)]
+selected_arbol <- vif_func(presvals.pca_arbol) 
+presvals.pca.2_arbol <- presvals.pca_arbol[,c(selected_arbol)]
 
+pca_arbol <- prcomp(presvals.pca.2_arbol, scale. = TRUE, retx = T)
 
 #### Phylogenetic PCA (e.g., Revell 2009; Evolution)
 
