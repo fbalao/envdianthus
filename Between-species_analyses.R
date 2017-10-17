@@ -39,5 +39,5 @@ orden<-tree$tip.label # este es el orden de las poblaciones para los valores del
 
 phylosig(tree,PCA1values,method="lambda",test=TRUE, nsim=100000)
 phylosig(tree,PCA1values,method="K",test=TRUE, nsim=100000)
-phylosig(tree,PCA2values,method="labda",test=TRUE, nsim=100000)
+phylosig(tree,PCA2values,method="lambda",test=TRUE, nsim=100000)
 phylosig(tree,PCA2values,method="K",test=TRUE, nsim=100000)
