@@ -121,7 +121,7 @@ presvals.pca.2 <- presvals.pca[,c(selected)]
 ploidy <- ploidy$ploidy
 ploidy <- factor (ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 
-pca <- prcomp(presvals.pca.2.corselect, scale. = TRUE, retx = T)
+pca <- prcomp(presvals.pca.2, scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
          groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
@@ -226,7 +226,7 @@ todo.pca.2 <- todo.pca[,c(selected2)]
 todoploidy <- todo$ploidy
 w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))))
 
-pcaback <-dudi.pca(presvals.pca.2.corselect2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
+pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
 gcol = c("blue", "red", "green", "yellow", "orange")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
@@ -443,6 +443,22 @@ similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative =
 similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater")
 similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater")
 similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater")
+
+
+# Tabla
+
+# overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
+# 
+# lsimilarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
+# lsimilarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
+# 
+# gsimilarityab<-rbind(gsimilarity.testdite$p.D, gsimilarity.testdihe$p.D, gsimilarity.testdido$p.D, gsimilarity.testtehe$p.D, gsimilarity.testtedo$p.D, gsimilarity.testhedo$p.D)
+# gsimilarityba<-rbind(gsimilarity.testtedi$p.D, gsimilarity.testhedi$p.D, gsimilarity.testdodi$p.D, gsimilarity.testhete$p.D, gsimilarity.testdote$p.D, gsimilarity.testdohe$p.D)
+# 
+# equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
+# gequivalency<-rbind(gequivalency.test.dite$p.D, gequivalency.test.dihe$p.D, gequivalency.test.dido$p.D, gequivalency.test.tehe$p.D, gequivalency.test.tedo$p.D, gequivalency.test.hedo$p.D)
+# 
+# tablaresul<-data.frame(overlap,lsimilarityab,gsimilarityab, lsimilarityba,gsimilarityba,equivalency, gequivalency)
 
 
 #NICHE BREADTH
