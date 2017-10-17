@@ -32,50 +32,89 @@ gbifmap(todo, mapdatabase = "world", region = "Spain")
 #Limpiar el dataframe
 todo <- todo[,-c(1,2,5)]
 todo_cleaned<- unique(todo)
-cooDbroterigbif<-cbind(todo_cleaned,1)
 
 
 #Mapa
 e <- extent (-10,3.5,35.5,44)
-coordinates(cooDbroterigbif)<- ~decimalLongitude+ decimalLatitude
+coordinates(todo_cleaned)<- ~decimalLongitude+ decimalLatitude
 crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-proj4string(cooDbroterigbif) <- crs.geo 
+proj4string(todo_cleaned) <- crs.geo 
 map<-plot(gmap(e, type = "satellite"))
-points<-points(Mercator(cooDbroterigbif), col = "red", pch=20, cex = 1.5)
+points<-points(Mercator(todo_cleaned), col = "red", pch=20, cex = 1.5)
+
 
 # Quitamos los puntos en el mismo km^2
-coordinates(cooDbroterigbif) <- ~decimalLongitude+ decimalLatitude
-proj4string(cooDbroterigbif) <- crs.geo
-r <- raster(cooDbroterigbif)
+r <- raster(todo_cleaned)
 res(r) <- 0.008333333
 r <- extend(r, extent(r)+1)
-coord_sel <- as.data.frame(gridSample(cooDbroterigbif, r, n=1))
-coord_sel <- cbind (coord_sel, 1)
-colnames(coord_sel)[3]<-"ploidy"
-
+cooDbroterigbif <- as.data.frame(gridSample(todo_cleaned, r, n=1))
+cooDbroterigbif <- cbind(cooDbroterigbif, 1)
+colnames(cooDbroterigbif)[3]<-"ploidy"
+cooDbroterigbif$ploidy <- factor (cooDbroterigbif$ploidy, levels = c("1", "2x", "4x", "6x", "12x"), ordered = TRUE)
 
 
 #Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
-coord_sel$ploidy[coord_sel$decimalLatitude > 38 & coord_sel$decimalLongitude > -9.5 & coord_sel$decimalLatitude < 39 & coord_sel$decimalLongitude < -8] <- "4x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 37 & coord_sel$decimalLongitude > -9 & coord_sel$decimalLatitude < 37.5 & coord_sel$decimalLongitude < -7.5] <- "2x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 36.9 & coord_sel$decimalLongitude > -7.4 & coord_sel$decimalLatitude < 37.6 & coord_sel$decimalLongitude < -6] <- "12x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 36 & coord_sel$decimalLongitude > -6.3 & coord_sel$decimalLatitude < 37.14 & coord_sel$decimalLongitude < -4.75] <- "4x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 36.5 & coord_sel$decimalLongitude > -4.75 & coord_sel$decimalLatitude < 38.1 & coord_sel$decimalLongitude < -1.67] <- "2x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 37.3 & coord_sel$decimalLongitude > -1.7 & coord_sel$decimalLatitude < 38.3 & coord_sel$decimalLongitude < -0.5] <- "6x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 38.2 & coord_sel$decimalLongitude > -2.33 & coord_sel$decimalLatitude < 38.83 & coord_sel$decimalLongitude < 0.33] <- "6x"
-coord_sel$ploidy[coord_sel$decimalLatitude > 38.83 & coord_sel$decimalLongitude > -1.7 & coord_sel$decimalLatitude < 40.9 & coord_sel$decimalLongitude < 0.38] <- "4x"
-#coord_sel$ploidy[c(16,311,324,405)] <- "1"
-#coord_sel$ploidy[369] <- "6x"
-#coord_sel$ploidy[c(16,285)] <- "4x"
-cooDbroterigbifdata<-coord_sel[coord_sel$ploidy!="1",]
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38 & cooDbroterigbif$decimalLongitude > -9.5 & cooDbroterigbif$decimalLatitude < 39 & cooDbroterigbif$decimalLongitude < -8] <- "4x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 37 & cooDbroterigbif$decimalLongitude > -9 & cooDbroterigbif$decimalLatitude < 37.5 & cooDbroterigbif$decimalLongitude < -7.5] <- "2x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36.9 & cooDbroterigbif$decimalLongitude > -7.4 & cooDbroterigbif$decimalLatitude < 37.6 & cooDbroterigbif$decimalLongitude < -6] <- "12x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36 & cooDbroterigbif$decimalLongitude > -6.3 & cooDbroterigbif$decimalLatitude < 37.14 & cooDbroterigbif$decimalLongitude < -4.75] <- "4x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36.5 & cooDbroterigbif$decimalLongitude > -4.75 & cooDbroterigbif$decimalLatitude < 38.1 & cooDbroterigbif$decimalLongitude < -1.67] <- "2x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 37.3 & cooDbroterigbif$decimalLongitude > -1.7 & cooDbroterigbif$decimalLatitude < 38.3 & cooDbroterigbif$decimalLongitude < -0.5] <- "6x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38.2 & cooDbroterigbif$decimalLongitude > -2.33 & cooDbroterigbif$decimalLatitude < 38.83 & cooDbroterigbif$decimalLongitude < 0.33] <- "6x"
+cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38.83 & cooDbroterigbif$decimalLongitude > -1.7 & cooDbroterigbif$decimalLatitude < 40.9 & cooDbroterigbif$decimalLongitude < 0.38] <- "4x"
+cooDbroterigbif<-cooDbroterigbif[cooDbroterigbif$ploidy!="1",]
 
-cooDbroterigbifdata$ploidy<-factor(cooDbroterigbifdata$ploidy,levels = c("2x","4x","6x","12x","1"),ordered = TRUE)
-ploidy <- as.data.frame (cooDbroterigbifdata$ploidy)
 
-coordinates(cooDbroterigbifdata) <- ~decimalLongitude+ decimalLatitude
-proj4string(cooDbroterigbifdata) <- crs.geo
+#===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
+
+e1 <- extent (-7,-6.4,36.8,37.5)
+
+dianthuspops <- read.table ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/DianthusPoints.txt", header = T, sep = ",")
+dianthuspops <- dianthuspops [,-c(1,4)]
+dianthuspops <- dianthuspops [,c(2,1)]
+colnames (dianthuspops) <- c("long", "lat")
+
+coordinates(dianthuspops) <- ~long+ lat
+proj4string(dianthuspops) <- crs.geo
+r1 <- raster(dianthuspops)
+res(r1) <- 0.008333333
+r1 <- extend(r1, extent(r1)+1)
+dianthuspops_fran <- as.data.frame(gridSample(dianthuspops, r1, n=1))
+
+dianthuspops_fran <- cbind (dianthuspops_fran, 1)
+colnames (dianthuspops_fran) [3] <- "ploidy"
+dianthuspops_fran$ploidy <- factor (dianthuspops_fran$ploidy, levels = c("1", "4x", "12x"), ordered = TRUE)
+
+dianthuspops_fran$ploidy[dianthuspops_fran$long < -6.72] <- "12x"
+dianthuspops_fran$ploidy[dianthuspops_fran$long > -6.55] <- "12x"
+dianthuspops_fran$ploidy[dianthuspops_fran$lat < 37.07] <- "12x"
+dianthuspops_fran$ploidy[dianthuspops_fran$ploidy == "1"] <- "4x"
+
+coordinates(dianthuspops_fran) <- ~long+ lat
+proj4string(dianthuspops_fran) <- crs.geo
+plot(gmap(e1, type = "satellite"))
+points(Mercator(dianthuspops_fran), col=dianthuspops_fran$ploidy, pch=20, cex=1)
+
+#===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
+
+
+dianthuspops_fran <- as.data.frame (dianthuspops_fran)
+colnames(cooDbroterigbif) <- colnames(dianthuspops_fran)
+cooDbroterigbif <- rbind (cooDbroterigbif, dianthuspops_fran)
+
+cooDbroterigbif$ploidy<-factor(cooDbroterigbif$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
+ploidy <- as.data.frame (cooDbroterigbif$ploidy)
+
+coordinates(cooDbroterigbif) <- ~long+ lat
+proj4string(cooDbroterigbif) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(cooDbroterigbifdata), col=cooDbroterigbifdata$ploidy, pch=20, cex=1)
+points(Mercator(cooDbroterigbif), col=cooDbroterigbif$ploidy, pch=20, cex=1)
+
+cooDbroterigbifdata <- as.data.frame (cooDbroterigbif)
+cooDbroterigbifdata <- cooDbroterigbifdata [,-3]
+coordinates(cooDbroterigbifdata) <- ~long+ lat
+proj4string(cooDbroterigbifdata) <- crs.geo
+
 
 #carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
 #extraccion de datos de las variables predictoras en las poblaciones
@@ -309,18 +348,18 @@ overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
 #SIMILARITY TEST
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "lower")
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "lower")
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "lower")
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "lower")
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "lower")
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "lower")
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "lower")
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "lower")
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "lower")
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "lower")
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "lower")
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "lower")
+similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
+similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
+similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
+similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater")
+similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "greater")
+similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "greater")
+similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "greater")
+similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "greater")
+similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "greater")
+similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater")
+similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater")
+similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater")
 
 
 #NICHE BREADTH
