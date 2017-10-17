@@ -35,9 +35,17 @@ tree<-read.nexus("tree.nex")
 plot(tree)
 orden<-tree$tip.label # este es el orden de las poblaciones para los valores del PCA
 #Extraer los valores del PCA -> PCA1values, PCA2values, PCA3values?
+PCAphylo<-readRDS("PCAphylo.RDS")
+
+phylosig(tree,PCAphylo[,1],method="lambda",test=TRUE, nsim=100000)
+phylosig(tree,PCAphylo[,1],method="K",test=TRUE, nsim=100000)
+phylosig(tree,PCAphylo[,2],method="lambda",test=TRUE, nsim=100000)
+phylosig(tree,PCAphylo[,2],method="K",test=TRUE, nsim=100000)
+X11()
+phenogram(tree,PCAphylo[,1],spread.labels=TRUE)
+
+plotTree.barplot (tree2,abs(PCAphylo[,1]) )
+obj<-plotTree.barplot(tree,PCAphylo[,1],list(xlim=c(min(PCAphylo[,1]),max(PCAphylo[,1]))))
 
 
-phylosig(tree,PCA1values,method="lambda",test=TRUE, nsim=100000)
-phylosig(tree,PCA1values,method="K",test=TRUE, nsim=100000)
-phylosig(tree,PCA2values,method="lambda",test=TRUE, nsim=100000)
-phylosig(tree,PCA2values,method="K",test=TRUE, nsim=100000)
+obj <- contMap(tree, PCAphylo[,1])

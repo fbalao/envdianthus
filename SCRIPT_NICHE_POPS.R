@@ -323,12 +323,12 @@ ecospat.plot.niche.dyn (zdi, zte, quant = 0.75)
 
 
 #EQUIVALENCY TEST
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower")
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower")
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower")
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower", ncores = 23 )
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower", ncores = 23 )
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower", ncores = 23 )
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower", ncores = 23 )
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower", ncores = 23 )
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower", ncores = 23 )
 
 
 #OVERLAP TEST
@@ -340,20 +340,32 @@ overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
-#SIMILARITY TEST
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "lower")
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "lower")
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "lower")
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "lower")
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "lower")
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "lower")
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "lower")
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "lower")
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "lower")
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "lower")
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "lower")
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "lower")
+#SIMILARITY TEST greater alternative hypothesis more similar than random
+similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater", ncores = 23 )
+similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater", ncores = 23 )
+similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater", ncores = 23 )
+similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater", ncores = 23 )
+similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "greater", ncores = 23 )
+similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "greater", ncores = 23 )
+similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "greater", ncores = 23 )
+similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "greater", ncores = 23 )
+similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "greater", ncores = 23 )
+similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater", ncores = 23 )
+similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater", ncores = 23 )
+similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater", ncores = 23 )
 
+
+# Tabla
+
+overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
+
+similarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
+similarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
+
+equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
+
+tablaresul<-data.frame(overlap,similarityab, similarityba,equivalency)
+write.table(tablaresul, file="resultadosoverlapingcormethod.txt", sep="\t",  row.names = F)
 
 #NICHE BREADTH
 raster.breadth (zdi$w)
