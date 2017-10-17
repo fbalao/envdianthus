@@ -277,11 +277,92 @@ presvals_arbol <- cbind (presvals_arbol, trivalues_arbol)
 presvals_arbol <- presvals_arbol[,c(1:37,46,38:45)]
 colnames(presvals_arbol)[38] <- "tri"
 
-presvals.pca_arbol <- presvals_arbol[,-c(1,46)]
-selected_arbol <- vif_func(presvals.pca_arbol) 
-presvals.pca.2_arbol <- presvals.pca_arbol[,c(selected_arbol)]
+#BACKGROUND
+dbroteridata_arbol <- as.data.frame(dbroteri_arbol)
+presvalsdata_arbol <- cbind (dbroteridata_arbol[,c(3,4)], presvals_arbol)
+presvalsdata_arbol <- presvalsdata_arbol [,-48]
+presvalsdata_arbol <- presvalsdata_arbol [,c(2,1,3:47)]
+presvals2_arbol <- presvalsdata_arbol
+coordinates(presvals2_arbol) <- ~long+ lat
+proj4string(presvals2_arbol) <- crs.geo
 
-pca_arbol <- prcomp(presvals.pca.2_arbol, scale. = TRUE, retx = T)
+backgroundcoord_arbol <- presvalsdata_arbol [,c(1,2)]
+coordinates(backgroundcoord_arbol) <- ~long+ lat
+proj4string(backgroundcoord_arbol) <- crs.geo
+
+
+mask <- raster(backgroundcoord_arbol)
+res(mask) <- 0.008333333
+x <- circles(backgroundcoord_arbol, d=50000, lonlat=TRUE)
+#Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
+pol <- gUnaryUnion(x@polygons)
+samp <- spsample(pol, 1000, type='random', iter=25)
+extent(mask) <- extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
+cells <- cellFromXY(mask, samp)
+length(cells)
+cells <- unique(cells)
+length(cells)
+xy <- xyFromCell(mask, cells)
+# A los puntos generados para el background unimos los de presencia para este citotipo (util para que no de error la funcion posterior ecospat.grid.clim.dyn)
+xy <- as.data.frame(xy)
+colnames(xy) <- c("long", "lat")
+
+# Quitamos los puntos en el mismo km^2
+coordinates(xy) <- ~long+ lat
+proj4string(xy) <- crs.geo
+r <- raster(xy)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+backcoord_sel <- as.data.frame(gridSample(xy, r, n=1))
+coordinates(backcoord_sel) <- ~long+ lat
+proj4string(backcoord_sel) <- crs.geo
+
+# Extraccion de variables para el background y modificacion de la tabla
+backgroundclim <- extract(variables,backcoord_sel)
+backgroundsoil <- extract.list(backcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+backgrounddat <- cbind("background",as.data.frame(backcoord_sel),backgroundclim, backgroundsoil)
+backgrounddat <- backgrounddat[,-42]
+
+coordinates(backgrounddat) <- ~long+ lat
+proj4string(backgrounddat) <- crs.geo
+trivalues1 <- extract(tri.ext,backgrounddat)
+backgrounddat <- as.data.frame(backgrounddat)
+backgrounddat <- backgrounddat[,-40]
+backgrounddat <- cbind (backgrounddat, trivalues1)
+backgrounddat <- backgrounddat[,c(1:39,50,40:49)]
+colnames(backgrounddat)[40] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
+
+backgrounddat.c <- na.omit(backgrounddat)
+backgrounddat.c <- cbind(backgrounddat.c,apply(backgrounddat.c[,c(42:44)], 1, mean))
+backgrounddat.c <- backgrounddat.c[,-c(42:44)]
+colnames(backgrounddat.c)[48] <- "AWC"
+backgrounddat.c <- backgrounddat.c[,c(1:41,48,42:47)]
+backgrounddat.c <- backgrounddat.c[,-48]
+backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:47)]
+colnames(backgrounddat.c) <- colnames(presvalsdata_arbol)
+
+todo <- rbind (presvalsdata_arbol, as.data.frame(backgrounddat.c))
+
+selected2<-vif_func(todo[,-c(1:3)])
+todo.pca.2 <- todo[,-c(1:3)][,c(selected2)]
+
+# presvals.pca.corselect2 <- cbind (todo.pca,1)
+# correlations2 <- corSelect (presvals.pca.corselect2, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
+# presvals.pca.2.corselect2 <- presvals.pca.corselect2[,correlations2$selected.var.cols]
+
+todoploidy <- todo$ploidy
+w<-c(rep(0,nrow(presvalsdata_arbol)),rep(1,nrow(as.data.frame(backgrounddat.c))))
+
+pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
+gcol = c("blue", "red", "green", "yellow", "orange")
+s.label(pcaback$li, clabel = 0.1)
+scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
+s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
+
+muestras<-todo$ploidy_arbol!="background"
+PCAphylo<-pcaback$li[muestras,]
+saveRDS(PCAphylo,"PCAphylo.RDS")
+
 
 #### Phylogenetic PCA (e.g., Revell 2009; Evolution)
 
@@ -350,18 +431,18 @@ overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
 #SIMILARITY TEST
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "lower")
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "lower")
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "lower")
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "lower")
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "lower")
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "lower")
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "lower")
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "lower")
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "lower")
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "lower")
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "lower")
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "lower")
+similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
+similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
+similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
+similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater")
+similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "greater")
+similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "greater")
+similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "greater")
+similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "greater")
+similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "greater")
+similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater")
+similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater")
+similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater")
 
 
 #NICHE BREADTH
