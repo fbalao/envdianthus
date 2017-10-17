@@ -29,6 +29,8 @@ library (fmsb)
 library (Hmisc)
 library (devtools)
 library (ENMTools)
+library (animation)
+library (phytools)
 
 
 #dataset de poblaciones con coordenadas
@@ -220,6 +222,29 @@ gcol = c("blue", "red", "green", "yellow", "orange")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
 s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
+
+
+#===============PHYTOOLS=============#
+
+#### Phylogenetic PCA (e.g., Revell 2009; Evolution)
+
+phyl.pca(tree, Y, method="BM", mode="cov")
+
+### Phylogenetical signal Enviromental variables Abouheif’s C statistic tested the null hypothesis
+# that traits did not experience phylogenetic autocorrelation (based on the topology)
+
+tree<-read.nexus("tree.nex")
+plot(tree)
+orden<-tree$tip.label # este es el orden de las poblaciones para los valores del PCA
+#Extraer los valores del PCA -> PCA1values, PCA2values, PCA3values?
+
+
+phylosig(tree,PCA1values,method="lambda",test=TRUE, nsim=100000)
+phylosig(tree,PCA1values,method="K",test=TRUE, nsim=100000)
+phylosig(tree,PCA2values,method="lambda",test=TRUE, nsim=100000)
+phylosig(tree,PCA2values,method="K",test=TRUE, nsim=100000)
+
+#===============PHYTOOLS=============#
 
 
 #===============ECOSPAT=============#
