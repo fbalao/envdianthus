@@ -472,23 +472,7 @@ equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equival
 tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
 
 write.table (tablaresul, "results_pops_vif.txt", sep = "\t")
-<<<<<<< HEAD
->>>>>>> 9eefbdc042c141b4f5ebb38d056b77026d2efcb0
 
-
-# Tabla
-
-overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
-
-similarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
-similarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
-
-equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
-=======
->>>>>>> 9eefbdc042c141b4f5ebb38d056b77026d2efcb0
-
-tablaresul<-data.frame(overlap,similarityab, similarityba,equivalency)
-write.table(tablaresul, file="resultadosoverlapingcormethod.txt", sep="\t",  row.names = F)
 
 #NICHE BREADTH
 raster.breadth (zdi$w)
