@@ -45,6 +45,8 @@ phylosig(tree,PCAphylo[,2],method="lambda",test=TRUE, nsim=100000)
 phylosig(tree,PCAphylo[,2],method="K",test=TRUE, nsim=100000)
 
 
+phenogram(tree,PCAphylo$Axis1)
+
 #
 library(adephylo)
 library(phylobase)
@@ -64,14 +66,13 @@ abouTestsBrown <- abouheif.moran(PCA, W=myProx)
 a1.ortgTest <- orthogram(x$Axis1, tree) # No señal en eje 1
 a2.ortgTest <- orthogram(x$Axis2, tree) # Sí en eje 2
 
-# OUwie
-library("OUwie")
+
 
 # OUCH
 ouchtree<-readRDS("ouchtree.RDS")
 datosouch<-readRDS("ouchtable.RDS")
 PCAphylo2 <- PCAphylo[as.character(datosouch$labels[-(1:16)]) , ] # Reorder to fix ouchtree
-rownames(PCAphylo2)==datosouch$labels[-(1:16)] # Check order
+rownames(PCAphylo2)==datosouch$labels[-(1:16)] # Check git reset --mergeorder
 
 datosouch$PC1[-(1:16)]<-PCAphylo2$Axis1
 datosouch$PC2[-(1:16)]<-PCAphylo2$Axis2
@@ -98,27 +99,98 @@ OU4PC1boot<-bootstrap(OU4PC1)
 OU4PC2<-hansen(data = datosouch["PC2"], tree = ouchtree, regimes = datosouch["OU.4"],     sqrt.alpha = 1, sigma = 1)
 OU4PC2boot<-bootstrap(OU4PC2)
 
+#OU model 5 optima == ploidy levels + northern 4x
+OU5PC1<-hansen(data = datosouch["PC1"], tree = ouchtree, regimes = datosouch["OU.5"],     sqrt.alpha = 1, sigma = 1)
+OU5PC1boot<-bootstrap(OU4PC1)
+
+OU5PC2<-hansen(data = datosouch["PC2"], tree = ouchtree, regimes = datosouch["OU.5"],     sqrt.alpha = 1, sigma = 1)
+OU5PC2boot<-bootstrap(OU4PC2)
 
 t.test(OU1PC1boot$aic.c,bootbrwonpc1$aic.c)
 t.test(OU4PC1boot$aic.c,bootbrwonpc1$aic.c)
 t.test(OU1PC1boot$aic.c,OU4PC1boot$aic.c)
-# los test muestrasn que PC1 sigue model browniano
+t.test(OU1PC1boot$aic.c,OU5PC1boot$aic.c)
+t.test(OU4PC1boot$aic.c,OU5PC1boot$aic.c)
+t.test(bootbrwonpc1$aic.c,OU5PC1boot$aic.c)
+
+# los test muestrasn que PC1 sigue model OU con 5 optimos
 
 t.test(OU1PC2boot$aic.c,bootbrwonpc2$aic.c)
 t.test(OU4PC2boot$aic.c,bootbrwonpc2$aic.c)
 t.test(OU1PC2boot$aic.c,OU4PC2boot$aic.c)
+t.test(OU1PC2boot$aic.c,OU5PC2boot$aic.c)
+t.test(OU4PC2boot$aic.c,OU5PC2boot$aic.c)
+t.test(bootbrwonpc2$aic.c,OU5PC2boot$aic.c)
 # los test muestran que PC2 sigue OU con 4 optima
 
 # PC1
 quantile(bootbrwonpc1$aic.c,c(0.05,0.5,0.95))
 quantile(OU1PC1boot$aic.c,c(0.05,0.5,0.95))
 quantile(OU4PC1boot$aic.c,c(0.05,0.5,0.95))
+quantile(OU5PC1boot$aic.c,c(0.05,0.5,0.95))
 
 #PC2
 quantile(bootbrwonpc2$aic.c,c(0.05,0.5,0.95))
 quantile(OU1PC2boot$aic.c,c(0.05,0.5,0.95))
 quantile(OU4PC2boot$aic.c,c(0.05,0.5,0.95))
-
+quantile(OU5PC2boot$aic.c,c(0.05,0.5,0.95))
 
 boxplot(datosouch$PC1~factor(datosouch$OU.4,levels=c("2x","4x","6x","12x")), col=rainbow(4))
 boxplot(datosouch$PC2~factor(datosouch$OU.4,levels=c("2x","4x","6x","12x")),col=rainbow(4))
+
+
+# El mismo analysis BM, OU1, OUM
+library(mvMORPH)
+state<-datosouch$OU.4
+names(state)<-datosouch$labels
+# Make the tree with mapped states using SIMMAP
+tree<-  make.simmap(tree, state, model="ER", nsim=1)
+plot(tree)
+
+trait1_BM<-  mvBM(tree, PCAphylo[,1], model="BMM")
+trait2_BM<-  mvBM(tree, PCAphylo[,2], model="BMM")
+
+trait1_OU1<-  mvOU(tree, PCAphylo[,1], model="OU1")
+trait2_OU1<-  mvOU(tree, PCAphylo[,2], model="OU1")
+
+trait1_OUM<-  mvOU(tree, PCAphylo[,1], model="OUM")
+trait2_OUM<-  mvOU(tree, PCAphylo[,2], model="OUM")
+
+AIC(trait1_BM);AIC(trait1_OUM);AIC(trait1_OU1)
+AIC(trait1_BM);AIC(trait2_OUM);AIC(trait2_OU1)
+
+OUM<-  mvOU(tree, PCAphylo, model="OUM")
+
+# Ajusta modelo BM con un único régimen o varias tasas de evolución
+library(phytools)
+fitBM_PCA1<-brownie.lite(tree,PCAphylo[,1], test="simulation")
+fitBM_PCA2<-brownie.lite(tree,PCAphylo[,2], test="simulation")
+
+# Ajusta OU
+library(OUwie)
+plotSimmap(tree,type="fan",fsize=0.8,ftype="i")
+tree$node.label<-getStates(tree,"nodes")
+dataPC1<-data.frame(Genus_species=PCA@label,Reg=factor(c(2,2,2,2,6,6,6,4,4,4,4,4,4,12,12,12,12,4,4,4,2,2)),X=PCA@data$Axis1)
+
+fitBMPC1<-OUwie(tree,dataPC1,model="BM1",simmap.tree=TRUE)
+fitOUMPC1<-OUwie(tree,dataPC1,model="OUM",simmap.tree=TRUE)
+fitOUMAPC1<-OUwie(tree,dataPC1,model="OUMA",simmap.tree=TRUE)
+fitOUMVAPC1<-OUwie(tree,dataPC1,model="OUMVA",simmap.tree=TRUE)
+
+fitBMPC1$AICc
+fitOUMPC1$AICc
+fitOUMAPC1$AICc
+fitOUMVAPC1$AICc
+
+
+dataPC2<-data.frame(Genus_species=PCA@label,Reg=factor(c(2,2,2,2,6,6,6,4,4,4,4,4,4,12,12,12,12,4,4,4,2,2)),X=PCA@data$Axis2)
+
+fitBMPC2<-OUwie(tree,dataPC2,model="BM1",simmap.tree=TRUE)
+fitOUMPC2<-OUwie(tree,dataPC2,model="OUM",simmap.tree=TRUE)
+fitOUMAPC2<-OUwie(tree,dataPC2,model="OUMA",simmap.tree=TRUE)
+fitOUMVAPC2<-OUwie(tree,dataPC2,model="OUMVA",simmap.tree=TRUE)
+
+fitBMPC2$AICc
+fitOUMPC2$AICc
+fitOUMAPC2$AICc
+fitOUMVAPC2$AICc
