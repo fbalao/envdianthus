@@ -130,7 +130,7 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #PCA con todas las variables
-pca <- prcomp(presvals[,-c(1,46)], scale. = TRUE, retx = T)
+pca_all <- prcomp(presvals.pca, scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
          groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
