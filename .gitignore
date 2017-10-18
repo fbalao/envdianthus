@@ -12,3 +12,8 @@ environment.RData
 env.RData
 PCAphylo.RDS
 .RDS
+ouchtable.RDS
+ouchtree.RDS
+resultadosoverlapingcormethod.txt
+resultadosoverlapinggbif.txt
+maxent.jar
