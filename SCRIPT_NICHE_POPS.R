@@ -8,7 +8,7 @@ library (rgeos)
 library (gtools)
 # library (maps)
 # library (ggmap)
-library (fuzzySim)
+# library (fuzzySim)
 # library (ade4)
 # library (pcaMethods)
 library (ecospat)
@@ -31,6 +31,7 @@ library (devtools)
 library (ENMTools)
 library (animation)
 library (phytools)
+library (Momocs)
 
 
 #dataset de poblaciones con coordenadas
@@ -139,6 +140,7 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #===============GENERAL BACKGROUND=============#
+
 dbroteridata <- as.data.frame(dbroteri)
 presvalsdata <- cbind (dbroteridata[,c(3,4)], presvals)
 presvalsdata <- presvalsdata [,-48]
@@ -216,7 +218,7 @@ points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 todo <- rbind (presvalsdata, as.data.frame(backgrounddat.c))
 
 todo.pca <- todo[,-c(1:3)]
-selected2<-vif_func(todo.pca)
+selected2 <- vif_func(todo.pca)
 todo.pca.2 <- todo.pca[,c(selected2)]
 
 # presvals.pca.corselect2 <- cbind (todo.pca,1)
