@@ -456,7 +456,7 @@ equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equival
 
 tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
 
-write.table (tablaresul, "results_pops.txt", sep = "\t")
+write.table (tablaresul, "results_pops_vif.txt", sep = "\t")
 
 
 #NICHE BREADTH
