@@ -1,10 +1,17 @@
 library (sp)
+library (GSIF)
+library (gtools)
+library (raster)
+library (spatialEco)
+library (dismo)
+library (ade4)
 
 
 dbroteri_arbol <- read.delim2 (file="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/Poblaciones_Nicho_arbol.csv", sep = ";", fileEncoding = "latin1", colClasses = c("factor", "factor", "numeric", "numeric"))
 ploidy_arbol <- dbroteri_arbol[,2]
 ploidy_arbol <- as.data.frame (ploidy_arbol)
 coordinates(dbroteri_arbol) <- ~long+ lat
+crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
 proj4string(dbroteri_arbol) <- crs.geo
 
 soilgrids_arbol<-extract.list(dbroteri_arbol, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
@@ -27,6 +34,28 @@ soilgrids_arbol<-cbind(soilgrids_arbol,apply(soilgrids_arbol[,c(2:4)], 1, mean))
 soilgrids_arbol<-soilgrids_arbol[,-c(1:4)]
 colnames(soilgrids_arbol)[7]<-"AWC"
 soilgrids_arbol <- soilgrids_arbol[,c(7,1,2,3,4,5,6)]
+
+#carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
+#extraccion de datos de las variables predictoras en las poblaciones
+
+e <- extent (-10,3,35,42)
+
+chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
+chelsa <- stack (chelsafiles)
+che.c <- crop (chelsa,e)
+
+enviremfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/envirem", pattern = ".bil", full.names = TRUE))
+envirem <- stack (enviremfiles)
+env.c <- crop (envirem, e)
+
+alt15files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_15", pattern = ".bil", full.names = TRUE))
+alt16files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_16", pattern = ".bil", full.names = TRUE))
+alt15 <- stack (alt15files)
+alt16 <- stack (alt16files)
+alt.m <- merge (alt15, alt16, ext=e)
+
+variables <- stack (che.c, env.c, alt.m)
+names (variables) <- c("bio1","bio2","bio3","bio4","bio5","bio6","bio7","bio8","bio9","bio10","bio11","bio12","bio13","bio14","bio15","bio16","bio17","bio18","bio19","annualPET","aridityIndexThornthwaite","climaticMoistureIndex","continentality","embergerQ","growingDegDays0","growingDegDays5","maxTempColdest","minTempWarmest","monthCountByTemp10","PETColdestQuarter","PETDriestQuarter","PETseasonality","PETWarmestQuarter","PETWettestQuarter","thermicityIndex","topoWet","tri","elevation")
 
 presvals_arbol <- extract (variables, dbroteri_arbol)
 presvals_arbol <- cbind (ploidy_arbol, presvals_arbol, soilgrids_arbol) 
@@ -109,15 +138,16 @@ colnames(backgrounddat.c) <- colnames(presvalsdata_arbol)
 
 todo <- rbind (presvalsdata_arbol, as.data.frame(backgrounddat.c))
 
-selected2<-vif_func(todo[,-c(1:3)])
-todo.pca.2 <- todo[,-c(1:3)][,c(selected2)]
+todo.pca <- todo[,-c(1:3)]
+selected2 <- vif_func(todo.pca)
+todo.pca.2 <- todo.pca[,c(selected2)]
 
 # presvals.pca.corselect2 <- cbind (todo.pca,1)
 # correlations2 <- corSelect (presvals.pca.corselect2, var.cols = 1:44, sp.cols = 45, cor.thresh = 0.75)
 # presvals.pca.2.corselect2 <- presvals.pca.corselect2[,correlations2$selected.var.cols]
 
 todoploidy <- factor (todo$ploidy, levels = c("2x", "4x", "6x", "12x", "background"), ordered = TRUE)
-w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))))
+w<-c(rep(0,nrow(presvalsdata_arbol)),rep(1,nrow(as.data.frame(backgrounddat.c))))
 
 pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
 gcol = c("blue", "red", "green", "purple", "black")
@@ -129,3 +159,5 @@ legend (7.5,-1.8,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, t
 muestras<-todo$ploidy_arbol!="background"
 PCAphylo<-pcaback$li[muestras,]
 saveRDS(PCAphylo,"PCAphylo.RDS")
+
+write.table (pcaback$co, "PCAvars_phy.txt", dec = ",", sep = "\t")
