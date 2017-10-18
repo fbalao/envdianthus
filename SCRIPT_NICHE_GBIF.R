@@ -200,7 +200,7 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #PCA con todas las variables
-pca <- prcomp(presvals2[,-c(1,46)], scale. = TRUE, retx = T)
+pca <- prcomp(presvals.pca, scale. = TRUE, retx = T)
 ggbiplot(pca, obs.scale = 1,var.scale = 1,
          groups = ploidy, ellipse = TRUE, circle = FALSE, alpha =  1) +
   scale_color_discrete(name = '') +
@@ -360,6 +360,20 @@ similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative =
 similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater")
 similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater")
 similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater")
+
+
+# TABLA
+
+overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
+
+similarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
+similarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
+
+equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
+
+tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
+
+write.table (tablaresul, "results_gbif_vif.txt", sep = "\t")
 
 
 #NICHE BREADTH
