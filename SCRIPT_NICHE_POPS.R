@@ -30,7 +30,7 @@ library (Hmisc)
 library (devtools)
 library (ENMTools)
 library (animation)
-library (phytools)
+# library (phytools)
 library (Momocs)
 
 
