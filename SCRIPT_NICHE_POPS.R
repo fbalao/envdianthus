@@ -31,7 +31,7 @@ library (devtools)
 library (ENMTools)
 library (animation)
 # library (phytools)
-library (FactoClass)
+library (Momocs)
 
 
 #dataset de poblaciones con coordenadas
