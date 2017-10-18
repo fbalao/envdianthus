@@ -430,22 +430,7 @@ overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
-<<<<<<< HEAD
 #SIMILARITY TEST greater alternative hypothesis more similar than random
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater", ncores = 23 )
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "greater", ncores = 23 )
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater", ncores = 23 )
-=======
-#SIMILARITY TEST
 similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
 similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
 similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
