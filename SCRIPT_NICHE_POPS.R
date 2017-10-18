@@ -445,20 +445,18 @@ similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative =
 similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater")
 
 
-# Tabla
+# TABLA
 
-# overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
-# 
-# lsimilarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
-# lsimilarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
-# 
-# gsimilarityab<-rbind(gsimilarity.testdite$p.D, gsimilarity.testdihe$p.D, gsimilarity.testdido$p.D, gsimilarity.testtehe$p.D, gsimilarity.testtedo$p.D, gsimilarity.testhedo$p.D)
-# gsimilarityba<-rbind(gsimilarity.testtedi$p.D, gsimilarity.testhedi$p.D, gsimilarity.testdodi$p.D, gsimilarity.testhete$p.D, gsimilarity.testdote$p.D, gsimilarity.testdohe$p.D)
-# 
-# equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
-# gequivalency<-rbind(gequivalency.test.dite$p.D, gequivalency.test.dihe$p.D, gequivalency.test.dido$p.D, gequivalency.test.tehe$p.D, gequivalency.test.tedo$p.D, gequivalency.test.hedo$p.D)
-# 
-# tablaresul<-data.frame(overlap,lsimilarityab,gsimilarityab, lsimilarityba,gsimilarityba,equivalency, gequivalency)
+overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
+
+similarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
+similarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
+
+equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
+
+tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
+
+write.table (tablaresul, "results_pops.txt", sep = "\t")
 
 
 #NICHE BREADTH
