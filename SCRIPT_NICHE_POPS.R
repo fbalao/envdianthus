@@ -8,7 +8,7 @@ library (rgeos)
 library (gtools)
 # library (maps)
 # library (ggmap)
-library (fuzzySim)
+# library (fuzzySim)
 # library (ade4)
 # library (pcaMethods)
 library (ecospat)
@@ -31,6 +31,7 @@ library (devtools)
 library (ENMTools)
 library (animation)
 library (phytools)
+library (Momocs)
 
 
 #dataset de poblaciones con coordenadas
@@ -139,6 +140,7 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #===============GENERAL BACKGROUND=============#
+
 dbroteridata <- as.data.frame(dbroteri)
 presvalsdata <- cbind (dbroteridata[,c(3,4)], presvals)
 presvalsdata <- presvalsdata [,-48]
@@ -216,7 +218,7 @@ points(Mercator(presvals2), col=presvals2$ploidy, pch=20, cex=1)
 todo <- rbind (presvalsdata, as.data.frame(backgrounddat.c))
 
 todo.pca <- todo[,-c(1:3)]
-selected2<-vif_func(todo.pca)
+selected2 <- vif_func(todo.pca)
 todo.pca.2 <- todo.pca[,c(selected2)]
 
 # presvals.pca.corselect2 <- cbind (todo.pca,1)
@@ -430,22 +432,7 @@ overlap.test.tedo<-ecospat.niche.overlap (zte, zdo, cor=FALSE)
 overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
-<<<<<<< HEAD
 #SIMILARITY TEST greater alternative hypothesis more similar than random
-similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater", ncores = 23 )
-similarity.testhedi<-ecospat.niche.similarity.test (zhe, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testdido<-ecospat.niche.similarity.test (zdi, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdodi<-ecospat.niche.similarity.test (zdo, zdi, 100, alternative = "greater", ncores = 23 )
-similarity.testtehe<-ecospat.niche.similarity.test (zte, zhe, 100, alternative = "greater", ncores = 23 )
-similarity.testhete<-ecospat.niche.similarity.test (zhe, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testtedo<-ecospat.niche.similarity.test (zte, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdote<-ecospat.niche.similarity.test (zdo, zte, 100, alternative = "greater", ncores = 23 )
-similarity.testhedo<-ecospat.niche.similarity.test (zhe, zdo, 100, alternative = "greater", ncores = 23 )
-similarity.testdohe<-ecospat.niche.similarity.test (zdo, zhe, 100, alternative = "greater", ncores = 23 )
-=======
-#SIMILARITY TEST
 similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
 similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
 similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
@@ -472,23 +459,7 @@ equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equival
 tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
 
 write.table (tablaresul, "results_pops_vif.txt", sep = "\t")
-<<<<<<< HEAD
->>>>>>> 9eefbdc042c141b4f5ebb38d056b77026d2efcb0
 
-
-# Tabla
-
-overlap<-rbind(overlap.test.dite$D,overlap.test.dihe$D, overlap.test.dido$D,overlap.test.tehe$D, overlap.test.tedo$D, overlap.test.hedo$D)
-
-similarityab<-rbind(similarity.testdite$p.D, similarity.testdihe$p.D, similarity.testdido$p.D, similarity.testtehe$p.D, similarity.testtedo$p.D, similarity.testhedo$p.D)
-similarityba<-rbind(similarity.testtedi$p.D, similarity.testhedi$p.D, similarity.testdodi$p.D, similarity.testhete$p.D, similarity.testdote$p.D, similarity.testdohe$p.D)
-
-equivalency<-rbind(equivalency.test.dite$p.D, equivalency.test.dihe$p.D, equivalency.test.dido$p.D, equivalency.test.tehe$p.D, equivalency.test.tedo$p.D, equivalency.test.hedo$p.D)
-=======
->>>>>>> 9eefbdc042c141b4f5ebb38d056b77026d2efcb0
-
-tablaresul<-data.frame(overlap,similarityab, similarityba,equivalency)
-write.table(tablaresul, file="resultadosoverlapingcormethod.txt", sep="\t",  row.names = F)
 
 #NICHE BREADTH
 raster.breadth (zdi$w)
