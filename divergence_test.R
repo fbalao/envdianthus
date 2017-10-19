@@ -1,17 +1,18 @@
-#Test divergence
-PC1dn<-t.test(scores.di[,1], scores.te[,1])
-PC1dn1<-t.test(scores.di[,1], scores.he[,1])
-PC1dn2<-t.test(scores.di[,1], scores.do[,1])
-PC1dn3<-t.test(scores.te[,1], scores.he[,1])
-PC1dn4<-t.test(scores.te[,1], scores.do[,1])
-PC1dn5<-t.test(scores.he[,1], scores.do[,1])
+#=================GBIF===================#
 
-PC2dn<-t.test(scores.di[,2], scores.te[,2])
-PC2dn1<-t.test(scores.di[,2], scores.he[,2])
-PC2dn2<-t.test(scores.di[,2], scores.do[,2])
-PC2dn3<-t.test(scores.te[,2], scores.he[,2])
-PC2dn4<-t.test(scores.te[,2], scores.do[,2])
-PC2dn5<-t.test(scores.he[,2], scores.do[,2])
+PC1dn<-t.test(scores.di[,1], scores.te[,1]) # diferencias
+PC1dn1<-t.test(scores.di[,1], scores.he[,1]) # no diferencias
+PC1dn2<-t.test(scores.di[,1], scores.do[,1]) # diferencias
+PC1dn3<-t.test(scores.te[,1], scores.he[,1]) # diferencias
+PC1dn4<-t.test(scores.te[,1], scores.do[,1]) # diferencias
+PC1dn5<-t.test(scores.he[,1], scores.do[,1]) # diferencias
+
+PC2dn<-t.test(scores.di[,2], scores.te[,2]) # no diferencias
+PC2dn1<-t.test(scores.di[,2], scores.he[,2]) # diferencias
+PC2dn2<-t.test(scores.di[,2], scores.do[,2]) # diferencias
+PC2dn3<-t.test(scores.te[,2], scores.he[,2]) # diferencias
+PC2dn4<-t.test(scores.te[,2], scores.do[,2]) # diferencias
+PC2dn5<-t.test(scores.he[,2], scores.do[,2]) # diferencias
 
 dbPC1<-vector()
 for (i in 1:9999){
@@ -45,3 +46,5 @@ db2<-quantile(dbPC2,c(0.025, .975))
 
 #dbIC= (-0.011362342  0.002173957)
 #daPC1=0.256439
+
+#=================GBIF===================#

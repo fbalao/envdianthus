@@ -17,7 +17,7 @@ library (fmsb)
 library (Hmisc)
 library (devtools)
 library (ENMTools)
-
+library (biogeo)
 
 #Datos de GBIF
 Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
@@ -382,3 +382,6 @@ raster.breadth (zdi$w)
 raster.breadth (zte$w)
 raster.breadth (zhe$w)
 raster.breadth (zdo$w)
+
+boxplot (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, col = rainbow(4))
+boxplot (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, col = rainbow(4))
