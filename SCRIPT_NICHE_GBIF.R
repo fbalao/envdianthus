@@ -17,30 +17,44 @@ library (fmsb)
 library (Hmisc)
 library (devtools)
 library (ENMTools)
-library (biogeo)
 
 #Datos de GBIF
-Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dinoxgbif<-occ_search(scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dhinoxgbif<-occ_search(scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dvalengbif<-occ_search(scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-todo<-rbind(Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
-todo$name<-"Dianthus broteri"
-gbifmap(todo, mapdatabase = "world", region = "Spain")
+Dbroterigbif <- occ_search (scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dinoxgbif <- occ_search (scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dhinoxgbif <- occ_search (scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dvalengbif <- occ_search (scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+
+Dbroterigbif <- Dbroterigbif [Dbroterigbif$coordinateUncertaintyInMeters!="NA",]
+Dbroterigbif <- Dbroterigbif [Dbroterigbif$coordinateUncertaintyInMeters<1000,]
+# Dinoxgbif <- Dinoxgbif [Dinoxgbif$coordinateUncertaintyInMeters<1000,]
+# Dinoxgbif <- Dinoxgbif [na.omit(Dinoxgbif$coordinateUncertaintyInMeters),]
+# Dhinoxgbif <- Dhinoxgbif [Dhinoxgbif$coordinateUncertaintyInMeters<1000,]
+# Dhinoxgbif <- Dhinoxgbif [na.omit(Dhinoxgbif$coordinateUncertaintyInMeters),]
+# Dvalengbif <- Dvalengbif [Dvalengbif$coordinateUncertaintyInMeters<1000,]
+# Dvalengbif <- Dvalengbif [na.omit(Dvalengbif$coordinateUncertaintyInMeters),]
+
+
+
+todo <- rbind (Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
+todo$name <- "Dianthus broteri"
+
+
+
+gbifmap (todo, mapdatabase = "world", region = "Spain")
 
 
 #Limpiar el dataframe
 todo <- todo[,-c(1,2,5)]
-todo_cleaned<- unique(todo)
+todo_cleaned <- unique(todo)
 
 
 #Mapa
 e <- extent (-10,3.5,35.5,44)
-coordinates(todo_cleaned)<- ~decimalLongitude+ decimalLatitude
-crs.geo <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84")
-proj4string(todo_cleaned) <- crs.geo 
-map<-plot(gmap(e, type = "satellite"))
-points<-points(Mercator(todo_cleaned), col = "red", pch=20, cex = 1.5)
+coordinates(todo_cleaned) <- ~decimalLongitude+ decimalLatitude
+crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
+proj4string (todo_cleaned) <- crs.geo 
+map <- plot (gmap (e, type = "satellite"))
+points <- points (Mercator(todo_cleaned), col = "red", pch=20, cex = 1.5)
 
 
 # Quitamos los puntos en el mismo km^2
