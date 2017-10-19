@@ -18,37 +18,37 @@ library (Hmisc)
 library (devtools)
 library (ENMTools)
 
-#Datos de GBIF
-Dbroterigbif <- occ_search (scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dinoxgbif <- occ_search (scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dhinoxgbif <- occ_search (scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dvalengbif <- occ_search (scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
 
-Dbroterigbif <- Dbroterigbif [Dbroterigbif$coordinateUncertaintyInMeters!="NA",]
-Dbroterigbif <- Dbroterigbif [Dbroterigbif$coordinateUncertaintyInMeters<1000,]
-# Dinoxgbif <- Dinoxgbif [Dinoxgbif$coordinateUncertaintyInMeters<1000,]
-# Dinoxgbif <- Dinoxgbif [na.omit(Dinoxgbif$coordinateUncertaintyInMeters),]
-# Dhinoxgbif <- Dhinoxgbif [Dhinoxgbif$coordinateUncertaintyInMeters<1000,]
-# Dhinoxgbif <- Dhinoxgbif [na.omit(Dhinoxgbif$coordinateUncertaintyInMeters),]
-# Dvalengbif <- Dvalengbif [Dvalengbif$coordinateUncertaintyInMeters<1000,]
-# Dvalengbif <- Dvalengbif [na.omit(Dvalengbif$coordinateUncertaintyInMeters),]
+#DATOS DE GBIF
+Dbroterigbif <- occ_search (scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dinoxgbif <- occ_search (scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dhinoxgbif <- occ_search (scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+Dvalengbif <- occ_search (scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
 
 
+#LIMPIEZA PARA QUEDARNOS CON UBICACIONES CON EXACTITUD (A PARTIR DE 2005)  
+Dbroterigbif <- Dbroterigbif [Dbroterigbif$year>2004,]
+Dbroterigbif <- Dbroterigbif [-c(129:189),]
+Dhinoxgbif <- Dhinoxgbif [Dhinoxgbif$year>2004,]
+Dhinoxgbif <- Dhinoxgbif [1,]
+Dvalengbif <- Dvalengbif [1,]
+  
+Dbroterigbif <- Dbroterigbif [, c(1:3)]
+Dinoxgbif <- Dinoxgbif [, c(1:3)]
+Dhinoxgbif <- Dhinoxgbif [, c(1:3)]
+Dvalengbif <- Dvalengbif [, c(1:3)]
 
 todo <- rbind (Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
 todo$name <- "Dianthus broteri"
-
-
-
 gbifmap (todo, mapdatabase = "world", region = "Spain")
 
 
-#Limpiar el dataframe
-todo <- todo[,-c(1,2,5)]
+#LIMPIEZA DE PUNTOS DUPLICADOS
 todo_cleaned <- unique(todo)
+todo_cleaned <- todo_cleaned [,-1]
 
 
-#Mapa
+#MAPA
 e <- extent (-10,3.5,35.5,44)
 coordinates(todo_cleaned) <- ~decimalLongitude+ decimalLatitude
 crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
@@ -62,21 +62,6 @@ r <- raster(todo_cleaned)
 res(r) <- 0.008333333
 r <- extend(r, extent(r)+1)
 cooDbroterigbif <- as.data.frame(gridSample(todo_cleaned, r, n=1))
-cooDbroterigbif <- cbind(cooDbroterigbif, 1)
-colnames(cooDbroterigbif)[3]<-"ploidy"
-cooDbroterigbif$ploidy <- factor (cooDbroterigbif$ploidy, levels = c("1", "2x", "4x", "6x", "12x"), ordered = TRUE)
-
-
-#Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38 & cooDbroterigbif$decimalLongitude > -9.5 & cooDbroterigbif$decimalLatitude < 39 & cooDbroterigbif$decimalLongitude < -8] <- "4x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 37 & cooDbroterigbif$decimalLongitude > -9 & cooDbroterigbif$decimalLatitude < 37.5 & cooDbroterigbif$decimalLongitude < -7.5] <- "2x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36.9 & cooDbroterigbif$decimalLongitude > -7.4 & cooDbroterigbif$decimalLatitude < 37.6 & cooDbroterigbif$decimalLongitude < -6] <- "12x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36 & cooDbroterigbif$decimalLongitude > -6.3 & cooDbroterigbif$decimalLatitude < 37.14 & cooDbroterigbif$decimalLongitude < -4.75] <- "4x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 36.5 & cooDbroterigbif$decimalLongitude > -4.75 & cooDbroterigbif$decimalLatitude < 38.1 & cooDbroterigbif$decimalLongitude < -1.67] <- "2x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 37.3 & cooDbroterigbif$decimalLongitude > -1.7 & cooDbroterigbif$decimalLatitude < 38.3 & cooDbroterigbif$decimalLongitude < -0.5] <- "6x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38.2 & cooDbroterigbif$decimalLongitude > -2.33 & cooDbroterigbif$decimalLatitude < 38.83 & cooDbroterigbif$decimalLongitude < 0.33] <- "6x"
-cooDbroterigbif$ploidy[cooDbroterigbif$decimalLatitude > 38.83 & cooDbroterigbif$decimalLongitude > -1.7 & cooDbroterigbif$decimalLatitude < 40.9 & cooDbroterigbif$decimalLongitude < 0.38] <- "4x"
-cooDbroterigbif<-cooDbroterigbif[cooDbroterigbif$ploidy!="1",]
 
 
 #===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
@@ -95,39 +80,58 @@ res(r1) <- 0.008333333
 r1 <- extend(r1, extent(r1)+1)
 dianthuspops_fran <- as.data.frame(gridSample(dianthuspops, r1, n=1))
 
-dianthuspops_fran <- cbind (dianthuspops_fran, 1)
-colnames (dianthuspops_fran) [3] <- "ploidy"
-dianthuspops_fran$ploidy <- factor (dianthuspops_fran$ploidy, levels = c("1", "4x", "12x"), ordered = TRUE)
-
-dianthuspops_fran$ploidy[dianthuspops_fran$long < -6.72] <- "12x"
-dianthuspops_fran$ploidy[dianthuspops_fran$long > -6.55] <- "12x"
-dianthuspops_fran$ploidy[dianthuspops_fran$lat < 37.07] <- "12x"
-dianthuspops_fran$ploidy[dianthuspops_fran$ploidy == "1"] <- "4x"
-
 coordinates(dianthuspops_fran) <- ~long+ lat
 proj4string(dianthuspops_fran) <- crs.geo
 plot(gmap(e1, type = "satellite"))
-points(Mercator(dianthuspops_fran), col=dianthuspops_fran$ploidy, pch=20, cex=1)
+points(Mercator(dianthuspops_fran), col="red" , pch=20, cex=1)
+
 
 #===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
 
-
 dianthuspops_fran <- as.data.frame (dianthuspops_fran)
 colnames(cooDbroterigbif) <- colnames(dianthuspops_fran)
-cooDbroterigbif <- rbind (cooDbroterigbif, dianthuspops_fran)
+cooDbroterigbif.def <- rbind (cooDbroterigbif, dianthuspops_fran)
+cooDbroterigbif.def2 <- cooDbroterigbif.def
 
-cooDbroterigbif$ploidy<-factor(cooDbroterigbif$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
-ploidy <- as.data.frame (cooDbroterigbif$ploidy)
+coordinates(cooDbroterigbif.def2) <- ~long+ lat
+proj4string (cooDbroterigbif.def2) <- crs.geo 
 
-coordinates(cooDbroterigbif) <- ~long+ lat
-proj4string(cooDbroterigbif) <- crs.geo
+r <- raster(cooDbroterigbif.def2)
+res(r) <- 0.008333333
+r <- extend(r, extent(r)+1)
+cooDbroterigbif.def.data <- as.data.frame(gridSample(cooDbroterigbif.def2, r, n=1))
+
+cooDbroterigbif.def.data <- cbind (cooDbroterigbif.def.data, 1)
+colnames(cooDbroterigbif.def.data)[3]<-"ploidy"
+
+#Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38 & cooDbroterigbif.def.data$long > -9.5 & cooDbroterigbif.def.data$lat < 39 & cooDbroterigbif.def.data$long < -8] <- "4x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37 & cooDbroterigbif.def.data$long > -9 & cooDbroterigbif.def.data$lat < 37.5 & cooDbroterigbif.def.data$long < -7.5] <- "2x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.9 & cooDbroterigbif.def.data$long > -7.4 & cooDbroterigbif.def.data$lat < 37.6 & cooDbroterigbif.def.data$long < -6] <- "12x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36 & cooDbroterigbif.def.data$long > -6.3 & cooDbroterigbif.def.data$lat < 37.14 & cooDbroterigbif.def.data$long < -4.72] <- "4x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.5 & cooDbroterigbif.def.data$long > -4.7 & cooDbroterigbif.def.data$lat < 38.1 & cooDbroterigbif.def.data$long < -1.67] <- "2x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37.3 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 38.3 & cooDbroterigbif.def.data$long < -0.5] <- "6x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.2 & cooDbroterigbif.def.data$long > -2.33 & cooDbroterigbif.def.data$lat < 38.83 & cooDbroterigbif.def.data$long < 0.33] <- "6x"
+cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.83 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 40.9 & cooDbroterigbif.def.data$long < 0.38] <- "4x"
+cooDbroterigbif.def.data$ploidy[c(58,62:63,120:123,125:130)]<- "4x"
+cooDbroterigbif.def.data <- cooDbroterigbif.def.data[cooDbroterigbif.def.data$ploidy!="1",]
+
+
+ploidy<-factor(cooDbroterigbif.def.data$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
+
+coordinates(cooDbroterigbif.def.data) <- ~long+ lat
+proj4string(cooDbroterigbif.def.data) <- crs.geo
 plot(gmap(e, type = "satellite"))
-points(Mercator(cooDbroterigbif), col=cooDbroterigbif$ploidy, pch=20, cex=1)
+points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
 
-cooDbroterigbifdata <- as.data.frame (cooDbroterigbif)
-cooDbroterigbifdata <- cooDbroterigbifdata [,-3]
-coordinates(cooDbroterigbifdata) <- ~long+ lat
-proj4string(cooDbroterigbifdata) <- crs.geo
+plot(gmap(e1, type = "satellite"))
+points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
+
+
+cooDbroterigbif.def.vars <- as.data.frame (cooDbroterigbif.def.data)
+cooDbroterigbif.def.vars <- cooDbroterigbif.def.vars [,c(3,1,2)]
+coordinates(cooDbroterigbif.def.vars) <- ~long+ lat
+proj4string(cooDbroterigbif.def.vars) <- crs.geo
 
 
 #carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
@@ -152,7 +156,7 @@ alt.m <- merge (alt15, alt16, ext=e)
 variables <- stack (che.c, env.c, alt.m)
 names (variables) <- c("bio1","bio2","bio3","bio4","bio5","bio6","bio7","bio8","bio9","bio10","bio11","bio12","bio13","bio14","bio15","bio16","bio17","bio18","bio19","annualPET","aridityIndexThornthwaite","climaticMoistureIndex","continentality","embergerQ","growingDegDays0","growingDegDays5","maxTempColdest","minTempWarmest","monthCountByTemp10","PETColdestQuarter","PETDriestQuarter","PETseasonality","PETWarmestQuarter","PETWettestQuarter","thermicityIndex","topoWet","tri","elevation")
 
-soilgrids<-extract.list(cooDbroterigbifdata, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+soilgrids<-extract.list(cooDbroterigbif.def.vars, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
 colnames (soilgrids) <- c("ploidy","AWCh1","AWCh2","AWCh3","BLDFIE","CECSOL","ORCDRC","PHIHOX","SNDPPT","TEXMHT")
 soilgrids$ploidy<-factor(soilgrids$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 soilgrids$TEXMHT<-replace(soilgrids$TEXMHT,soilgrids$TEXMHT=="1","clay")
@@ -174,7 +178,7 @@ colnames(soilgrids)[7]<-"AWC"
 soilgrids <- soilgrids[,c(7,1,2,3,4,5,6)]
 
 
-presvals <- extract (variables, cooDbroterigbifdata)
+presvals <- extract (variables, cooDbroterigbif.def.vars)
 presvals <- cbind (ploidy, presvals, soilgrids) 
 presvals$PHIHOX <- presvals$PHIHOX/10
 
@@ -182,7 +186,7 @@ presvals$PHIHOX <- presvals$PHIHOX/10
 
 tri.ext <- tri(alt.m)
 projection(tri.ext) <- crs.geo 
-trivalues<-extract(tri.ext,cooDbroterigbifdata)
+trivalues<-extract(tri.ext,cooDbroterigbif.def.vars)
 
 
 #sustitucion de los valores tri por los del dataframe con NAs
@@ -223,12 +227,11 @@ ggbiplot(pca, obs.scale = 1,var.scale = 1,
 
 
 #===============GENERAL BACKGROUND=============#
-dbroteridata <- as.data.frame(cooDbroterigbifdata)
-dbroteridata <- dbroteridata [,-3]
-colnames(dbroteridata) <- c("long", "lat")
+
+dbroteridata <- as.data.frame(cooDbroterigbif.def.vars)
+dbroteridata <- dbroteridata [,-1]
 presvalsdata <- cbind (dbroteridata, presvals)
 presvalsdata <- presvalsdata [,-48]
-colnames (presvalsdata)[3] <- "ploidy"
 presvalsdata <- na.omit (presvalsdata)
 presvals2 <- presvalsdata
 coordinates(presvals2) <- ~long+ lat
@@ -314,7 +317,7 @@ gcol = c("blue", "red", "green", "purple", "black")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1, clab.col = 0.5)
 s.class(pcaback$li, todoploidy, col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
-legend (9,8,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
+legend (6.5,-3,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
 
 
 #===============ECOSPAT=============#
@@ -345,6 +348,7 @@ ecospat.plot.niche.dyn (zdi, zte, quant = 0.75)
 
 
 #EQUIVALENCY TEST
+
 equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
 equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
 equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
@@ -354,6 +358,7 @@ equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternativ
 
 
 #OVERLAP TEST
+
 overlap.test.dite<-ecospat.niche.overlap (zdi, zte, cor=FALSE)
 overlap.test.dihe<-ecospat.niche.overlap (zdi, zhe, cor=FALSE)
 overlap.test.dido<-ecospat.niche.overlap (zdi, zdo, cor=FALSE)
@@ -363,6 +368,7 @@ overlap.test.hedo<-ecospat.niche.overlap (zhe, zdo, cor=FALSE)
 
 
 #SIMILARITY TEST
+
 similarity.testdite<-ecospat.niche.similarity.test (zdi, zte, 100, alternative = "greater")
 similarity.testtedi<-ecospat.niche.similarity.test (zte, zdi, 100, alternative = "greater")
 similarity.testdihe<-ecospat.niche.similarity.test (zdi, zhe, 100, alternative = "greater")
@@ -391,11 +397,14 @@ tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
 write.table (tablaresul, "results_gbif_vif.txt", sep = "\t")
 
 
+#BOXPLOTS
+
+boxplot (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, col = rainbow(4))
+boxplot (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, col = rainbow(4))
+
 #NICHE BREADTH
+
 raster.breadth (zdi$w)
 raster.breadth (zte$w)
 raster.breadth (zhe$w)
 raster.breadth (zdo$w)
-
-boxplot (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, col = rainbow(4))
-boxplot (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, col = rainbow(4))
