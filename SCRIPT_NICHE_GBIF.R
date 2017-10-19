@@ -17,7 +17,7 @@ library (fmsb)
 library (Hmisc)
 library (devtools)
 library (ENMTools)
-
+library (biogeo)
 
 #Datos de GBIF
 Dbroterigbif<-occ_search(scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields='minimal', hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
@@ -292,14 +292,15 @@ todo.pca <- todo[,-c(1:3)]
 selected2<-vif_func(todo.pca)
 todo.pca.2 <- todo.pca[,c(selected2)]
 
-todoploidy <- todo$ploidy
+todoploidy <- factor (todo$ploidy, levels = c("2x", "4x", "6x", "12x", "background"), ordered = TRUE)
 w<-c(rep(0,nrow(presvalsdata)),rep(1,nrow(as.data.frame(backgrounddat.c))))
 
 pcaback <-dudi.pca(todo.pca.2, row.w = w, center = TRUE, scale = TRUE, scannf = FALSE, nf = 2)
-gcol = c("blue", "red", "green", "yellow", "orange")
+gcol = c("blue", "red", "green", "purple", "black")
 s.label(pcaback$li, clabel = 0.1)
-scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1)
-s.class(pcaback$li, todo[,3], col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
+scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1, clab.col = 0.5)
+s.class(pcaback$li, todoploidy, col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
+legend (9,8,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
 
 
 #===============ECOSPAT=============#
@@ -381,3 +382,6 @@ raster.breadth (zdi$w)
 raster.breadth (zte$w)
 raster.breadth (zhe$w)
 raster.breadth (zdo$w)
+
+boxplot (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, col = rainbow(4))
+boxplot (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, col = rainbow(4))
