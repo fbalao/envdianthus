@@ -44,15 +44,34 @@ phylosig(tree,PCAphylo[,1],method="K",test=TRUE, nsim=100000)
 phylosig(tree,PCAphylo[,2],method="lambda",test=TRUE, nsim=100000)
 phylosig(tree,PCAphylo[,2],method="K",test=TRUE, nsim=100000)
 
+library(phangorn)
+tree2<-chronopl(tree, lambda = 1)
+phenogram(tree2,PCAphylo$Axis1)
+xa<-c(x,fastAnc(tree,PCAphylo$Axis1))
+H<-nodeHeights(tree)
+Y<-matrix(xa[tree$edge],nrow(tree$edge),2)
+plot.new()
+plot.window(xlim=range(H),ylim=range(Y))
+axis(1)
+axis(2)
+for(i in 1:nrow(tree$edge)) lines(H[i,],Y[i,],lwd=2)
+title(xlab="time",ylab="phenotype")
 
-phenogram(tree,PCAphylo$Axis1)
+
 
 #
 library(adephylo)
 library(phylobase)
+library(phylosignal)
 PCA<-phylo4d(tree,PCAphylo)
 
+correlo1<-phyloCorrelogram(PCA, trait = "Axis1")
 
+correlo2<-phyloCorrelogram(PCA, trait = "Axis2")
+par(mfrow=c(1,2))
+plot(correlo1, main= "PCA-env Axis 1", ylab="Moran's I")
+plot(correlo2, main= "PCA-env Axis 2", ylab="Moran's I")
+opographic wetness index
 table.phylo4d(PCA, ratio.tree = 1/3, cex.label=0.6, legend = F, cex.symbol=0.7,
               treetype="cladogram", box =F, scale=T, show.var.label=T, symbol="circles", grid=F)
 x <- tdata(PCA, type="tip")
@@ -66,6 +85,7 @@ abouTestsBrown <- abouheif.moran(PCA, W=myProx)
 a1.ortgTest <- orthogram(x$Axis1, tree) # No señal en eje 1
 a2.ortgTest <- orthogram(x$Axis2, tree) # Sí en eje 2
 
+#Correlogram dist env dist phylo
 
 
 # OUCH
