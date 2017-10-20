@@ -17,6 +17,7 @@ library (fmsb)
 library (Hmisc)
 library (devtools)
 library (ENMTools)
+library (vioplot)
 
 
 #DATOS DE GBIF
@@ -397,10 +398,11 @@ tablaresul<-data.frame(overlap,similarityab,similarityba,equivalency)
 write.table (tablaresul, "results_gbif_vif.txt", sep = "\t")
 
 
-#BOXPLOTS
+#VIOPLOTS
 
-boxplot (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, col = rainbow(4))
-boxplot (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, col = rainbow(4))
+vioplot_fun (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, names = c("2x","4x","6x","12x"), col = c("green", "red", "blue", "purple"))
+vioplot_fun (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, names = c("2x","4x","6x","12x"), col = c("green", "red", "blue", "purple"))
+
 
 #NICHE BREADTH
 
