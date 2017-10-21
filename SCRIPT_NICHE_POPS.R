@@ -22,6 +22,7 @@ library (GSIF)
 # library (lattice)
 # library (aqp)
 # library (soiltexture)
+library (ggplot2)
 library (ggbiplot)
 # library (psych)
 library (spatialEco)
@@ -30,7 +31,7 @@ library (Hmisc)
 library (devtools)
 library (ENMTools)
 library (animation)
-# library (phytools)
+library (vioplot)
 
 
 #dataset de poblaciones con coordenadas
@@ -313,6 +314,48 @@ write.table (tablaresul, "results_pops_vif.txt", sep = "\t")
 
 vioplot_fun (scores.di$Axis1, scores.te$Axis1, scores.he$Axis1, scores.do$Axis1, names = c("2x","4x","6x","12x"), col = c("green", "red", "blue", "purple"))
 vioplot_fun (scores.di$Axis2, scores.te$Axis2, scores.he$Axis2, scores.do$Axis2, names = c("2x","4x","6x","12x"), col = c("green", "red", "blue", "purple"))
+
+
+#DENSITY PLOTS
+
+ggplot(presvalsdata, aes(x = PETWettestQuarter, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = AWC, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = PHIHOX, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = aridityIndexThornthwaite, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = BLDFIE, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = SNDPPT, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = ORCDRC, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio3, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio5, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio8, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio9, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio12, fill = ploidy)) + 
+  geom_density(alpha=0.3)
+
+ggplot(presvalsdata, aes(x = bio18, fill = ploidy)) + 
+  geom_density(alpha=0.3)
 
 
 #NICHE BREADTH
