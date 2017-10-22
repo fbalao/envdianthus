@@ -1,4 +1,3 @@
-#=================GBIF===================#
 
 PC1dn<-t.test(scores.di[,1], scores.te[,1]) # diferencias
 PC1dn1<-t.test(scores.di[,1], scores.he[,1]) # no diferencias
@@ -46,5 +45,3 @@ db2<-quantile(dbPC2,c(0.025, .975))
 
 #dbIC= (-0.011362342  0.002173957)
 #daPC1=0.256439
-
-#=================GBIF===================#
