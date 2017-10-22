@@ -5,15 +5,15 @@ library(zoon)
 #==================POPULATIONS=====================#
 
 e <- extent (-10,3,35,44)
-chefiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/chelsa", pattern = ".tif", full.names = TRUE))
+chefiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/vars_selected_pops/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chefiles)
 che.c <- crop (chelsa,e)
 
-envfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/envirem", pattern = ".bil", full.names = TRUE))
+envfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/vars_selected_pops/envirem", pattern = ".bil", full.names = TRUE))
 envirem <- stack (envfiles)
 env.c <- crop (envirem,e)
 
-soilfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/vars_selected_pops/soil", pattern = ".tif", full.names = TRUE))
+soilfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/vars_selected_pops/soil", pattern = ".tif", full.names = TRUE))
 soilgrids <- stack (soilfiles)
 soil.c <- crop (soilgrids,e)
 
@@ -23,11 +23,11 @@ projection (soil.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
 combras <- CombineRasters(c(che.c, env.c, soil.c))
 vars.stack <- stack (combras [[1]], combras [[2]], combras [[3]])
 
-work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/dbroteri.csv"),
-                  covariate  = LocalRaster(vars.stack),
+work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv", occurrenceType = 'presence', subsetSpecies = c("2x", "ploidy")),
+                  covariate  = LocalRaster (vars.stack),
                   process    = Background (n = 1000, bias = 50),
                   model      = MaxEnt,
-                  output     = PrintMap)
+                  output     = Chain (PrintMap, ROCcurve))
 
 #==================POPULATIONS=====================#
 
