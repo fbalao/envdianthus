@@ -55,7 +55,7 @@ dbroteri_te <- as.data.frame (dbroteri_te)
 dbroteri_he <- as.data.frame (dbroteri_he)
 dbroteri_do <- as.data.frame (dbroteri_do)
 
-evaluation <- ENMevaluate (dbroteridata, vars.stack, dbroteri_backdata, rasterPreds = T)
+evaluation <- ENMevaluate (dbroteridata, vars.stack, dbroteri_backdata, method = "jackknife", rasterPreds = T)
 evaluation_di <- ENMevaluate (dbroteri_di, vars.stack, dbroteri_backdata, method = "jackknife", rasterPreds = T)
 evaluation_te <- ENMevaluate (dbroteri_te, vars.stack, dbroteri_backdata, method = "jackknife", rasterPreds = T)
 evaluation_he <- ENMevaluate (dbroteri_he, vars.stack, dbroteri_backdata, method = "jackknife", rasterPreds = T)
