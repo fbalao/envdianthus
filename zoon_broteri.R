@@ -26,8 +26,6 @@ alt15 <- stack (alt15files)
 alt16 <- stack (alt16files)
 alt.m <- merge (alt15, alt16, ext=e)
 tri.ext <- tri(alt.m)
-projection(tri.ext) <- crs.geo 
-trivalues<-extract(tri.ext,dbroteri)
 
 projection (che.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
 projection (env.c) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
