@@ -1,7 +1,8 @@
-library(gtools)
-library(rgdal)
-library(zoon)
-library(spatialEco)
+library (gtools)
+library (rgdal)
+library (rJava)
+library (zoon)
+# library (spatialEco)
 
 #==================POPULATIONS=====================#
 
@@ -34,13 +35,17 @@ library(spatialEco)
 # combras <- CombineRasters(c(che.c, env.c, soil.c, tri.ext))
 # vars.stack <- stack (combras [[1]], combras [[2]], combras [[3]], combras[[4]])
 
+LoadModule('PredictNewRasterMap')
+LoadModule('ROCcurve')
+LoadModule('PerformanceMeasures')
+
 vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon.grd")
 
 work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv"),
                   covariate  = LocalRaster (vars.stack),
-                  process    = Background (n = 1000, bias = 50),
+                  process    = Chain (Background (n = 1000, bias = 50), Crossvalidate),
                   model      = MaxEnt,
-                  output     = Chain (PrintMap, ROCcurve, PerformanceMeasures))
+                  output     = Chain (PrintMap, PredictNewRasterMap, ROCcurve, PerformanceMeasures))
 
 #==================POPULATIONS=====================#
 
