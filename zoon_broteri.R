@@ -38,8 +38,8 @@ vars.stack <- stack (combras [[1]], combras [[2]], combras [[3]], combras[[4]])
 
 vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon.grd")
 
-work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv"),
-                  covariate  = LocalRaster (vars.stack),
+work <- workflow (occurrence = LocalOccurrenceData (filename="dbroteri.csv"),
+                  covariate  = LocalRaster ("stack_zoon"),
                   process    = Background (n = 1000, bias = 50),
                   model      = MaxEnt,
                   output     = Chain (PrintMap, ROCcurve, PerformanceMeasures))
