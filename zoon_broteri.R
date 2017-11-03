@@ -45,6 +45,9 @@ vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimen
 work <- workflow (occurrence = LocalOccurrenceData (filename="dbroteri.csv"),
                   covariate  = LocalRaster ("stack_zoon"),
                   process    = Chain (Background (n = 1000, bias = 50), Crossvalidate),
+work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv"),
+                  covariate  = LocalRaster (vars.stack),
+                  process    = Crossvalidate,
                   model      = MaxEnt,
                   output     = Chain (PrintMap, PredictNewRasterMap, ROCcurve, PerformanceMeasures))
 
