@@ -2,6 +2,7 @@ library (gtools)
 library (rgdal)
 library (rJava)
 library (zoon)
+library (future)
 # library (spatialEco)
 
 #==================POPULATIONS=====================#
@@ -41,11 +42,16 @@ LoadModule('PerformanceMeasures')
 
 vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon.grd")
 
+run_wf <- function () {
 work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv"),
                   covariate  = LocalRaster (vars.stack),
                   process    = Crossvalidate,
                   model      = MaxEnt,
                   output     = Chain (PrintMap, PredictNewRasterMap, ROCcurve, PerformanceMeasures))
+}
+
+plan(multiprocess)
+system.time(run_wf())
 
 #==================POPULATIONS=====================#
 
