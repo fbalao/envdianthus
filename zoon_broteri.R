@@ -41,15 +41,10 @@ LoadModule('PerformanceMeasures')
 
 vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon.grd")
 
-<<<<<<< HEAD
+
 work <- workflow (occurrence = LocalOccurrenceData (filename="dbroteri.csv"),
                   covariate  = LocalRaster ("stack_zoon"),
-                  process    = Background (n = 1000, bias = 50),
-=======
-work <- workflow (occurrence = LocalOccurrenceData (filename="D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/dbroteri.csv"),
-                  covariate  = LocalRaster (vars.stack),
                   process    = Chain (Background (n = 1000, bias = 50), Crossvalidate),
->>>>>>> 31e3229516c1de06f0e5c658dac06e1b630f5145
                   model      = MaxEnt,
                   output     = Chain (PrintMap, PredictNewRasterMap, ROCcurve, PerformanceMeasures))
 
