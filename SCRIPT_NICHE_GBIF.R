@@ -21,135 +21,142 @@ library (vioplot)
 
 
 #DATOS DE GBIF
-Dbroterigbif <- occ_search (scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dinoxgbif <- occ_search (scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dhinoxgbif <- occ_search (scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-Dvalengbif <- occ_search (scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
-
-
-#LIMPIEZA PARA QUEDARNOS CON UBICACIONES CON EXACTITUD (A PARTIR DE 2005)  
-Dbroterigbif <- Dbroterigbif [Dbroterigbif$year>2004,]
-Dbroterigbif <- Dbroterigbif [-c(129:189),]
-Dhinoxgbif <- Dhinoxgbif [Dhinoxgbif$year>2004,]
-Dhinoxgbif <- Dhinoxgbif [1,]
-Dvalengbif <- Dvalengbif [1,]
-  
-Dbroterigbif <- Dbroterigbif [, c(1:3)]
-Dinoxgbif <- Dinoxgbif [, c(1:3)]
-Dhinoxgbif <- Dhinoxgbif [, c(1:3)]
-Dvalengbif <- Dvalengbif [, c(1:3)]
-
-todo <- rbind (Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
-todo$name <- "Dianthus broteri"
-gbifmap (todo, mapdatabase = "world", region = "Spain")
-
-
-#LIMPIEZA DE PUNTOS DUPLICADOS
-todo_cleaned <- unique(todo)
-todo_cleaned <- todo_cleaned [,-1]
-
-
-#MAPA
-e <- extent (-10,3.5,35.5,44)
-coordinates(todo_cleaned) <- ~decimalLongitude+ decimalLatitude
-crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
-proj4string (todo_cleaned) <- crs.geo 
-map <- plot (gmap (e, type = "satellite"))
-points <- points (Mercator(todo_cleaned), col = "red", pch=20, cex = 1.5)
-
-
-# Quitamos los puntos en el mismo km^2
-r <- raster(todo_cleaned)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-cooDbroterigbif <- as.data.frame(gridSample(todo_cleaned, r, n=1))
-
-
-#===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
-
-e1 <- extent (-7,-6.4,36.8,37.5)
-
-dianthuspops <- read.table ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/DianthusPoints.txt", header = T, sep = ",")
-dianthuspops <- dianthuspops [,-c(1,4)]
-dianthuspops <- dianthuspops [,c(2,1)]
-colnames (dianthuspops) <- c("long", "lat")
-
-coordinates(dianthuspops) <- ~long+ lat
-proj4string(dianthuspops) <- crs.geo
-r1 <- raster(dianthuspops)
-res(r1) <- 0.008333333
-r1 <- extend(r1, extent(r1)+1)
-dianthuspops_fran <- as.data.frame(gridSample(dianthuspops, r1, n=1))
-
-coordinates(dianthuspops_fran) <- ~long+ lat
-proj4string(dianthuspops_fran) <- crs.geo
-plot(gmap(e1, type = "satellite"))
-points(Mercator(dianthuspops_fran), col="red" , pch=20, cex=1)
-
-
-#===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
-
-dianthuspops_fran <- as.data.frame (dianthuspops_fran)
-colnames(cooDbroterigbif) <- colnames(dianthuspops_fran)
-cooDbroterigbif.def <- rbind (cooDbroterigbif, dianthuspops_fran)
-cooDbroterigbif.def2 <- cooDbroterigbif.def
-
-coordinates(cooDbroterigbif.def2) <- ~long+ lat
-proj4string (cooDbroterigbif.def2) <- crs.geo 
-
-r <- raster(cooDbroterigbif.def2)
-res(r) <- 0.008333333
-r <- extend(r, extent(r)+1)
-cooDbroterigbif.def.data <- as.data.frame(gridSample(cooDbroterigbif.def2, r, n=1))
-
-cooDbroterigbif.def.data <- cbind (cooDbroterigbif.def.data, 1)
-colnames(cooDbroterigbif.def.data)[3]<-"ploidy"
-
-#Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38 & cooDbroterigbif.def.data$long > -9.5 & cooDbroterigbif.def.data$lat < 39 & cooDbroterigbif.def.data$long < -8] <- "4x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37 & cooDbroterigbif.def.data$long > -9 & cooDbroterigbif.def.data$lat < 37.5 & cooDbroterigbif.def.data$long < -7.5] <- "2x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.9 & cooDbroterigbif.def.data$long > -7.4 & cooDbroterigbif.def.data$lat < 37.6 & cooDbroterigbif.def.data$long < -6] <- "12x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36 & cooDbroterigbif.def.data$long > -6.3 & cooDbroterigbif.def.data$lat < 37.14 & cooDbroterigbif.def.data$long < -4.72] <- "4x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.5 & cooDbroterigbif.def.data$long > -4.7 & cooDbroterigbif.def.data$lat < 38.1 & cooDbroterigbif.def.data$long < -1.67] <- "2x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37.3 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 38.3 & cooDbroterigbif.def.data$long < -0.5] <- "6x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.2 & cooDbroterigbif.def.data$long > -2.33 & cooDbroterigbif.def.data$lat < 38.83 & cooDbroterigbif.def.data$long < 0.33] <- "6x"
-cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.83 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 40.9 & cooDbroterigbif.def.data$long < 0.38] <- "4x"
-cooDbroterigbif.def.data$ploidy[c(58,62:63,120:123,125:130)]<- "4x"
-cooDbroterigbif.def.data <- cooDbroterigbif.def.data[cooDbroterigbif.def.data$ploidy!="1",]
-
-
-ploidy<-factor(cooDbroterigbif.def.data$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
-
-coordinates(cooDbroterigbif.def.data) <- ~long+ lat
-proj4string(cooDbroterigbif.def.data) <- crs.geo
-plot(gmap(e, type = "satellite"))
-points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
-
-plot(gmap(e1, type = "satellite"))
-points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
-
-
-cooDbroterigbif.def.vars <- as.data.frame (cooDbroterigbif.def.data)
-cooDbroterigbif.def.vars <- cooDbroterigbif.def.vars [,c(3,1,2)]
-coordinates(cooDbroterigbif.def.vars) <- ~long+ lat
-proj4string(cooDbroterigbif.def.vars) <- crs.geo
+# Dbroterigbif <- occ_search (scientificName = "Dianthus broteri",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+# Dinoxgbif <- occ_search (scientificName = "Dianthus inoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+# Dhinoxgbif <- occ_search (scientificName = "Dianthus hinoxianus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+# Dvalengbif <- occ_search (scientificName = "Dianthus valentinus",hasGeospatialIssue =FALSE, limit=50000, fields = c("name", "decimalLatitude", "decimalLongitude", "coordinateUncertaintyInMeters", "year", "eventDate", "locality", "occurrenceRemarks", "recordedBy"), hasCoordinate=TRUE, basisOfRecord = "PRESERVED_SPECIMEN", return = "data")
+# 
+# 
+# #LIMPIEZA PARA QUEDARNOS CON UBICACIONES CON EXACTITUD (A PARTIR DE 2005)  
+# Dbroterigbif <- Dbroterigbif [Dbroterigbif$year>2004,]
+# Dbroterigbif <- Dbroterigbif [-c(129:189),]
+# Dhinoxgbif <- Dhinoxgbif [Dhinoxgbif$year>2004,]
+# Dhinoxgbif <- Dhinoxgbif [1,]
+# Dvalengbif <- Dvalengbif [1,]
+#   
+# Dbroterigbif <- Dbroterigbif [, c(1:3)]
+# Dinoxgbif <- Dinoxgbif [, c(1:3)]
+# Dhinoxgbif <- Dhinoxgbif [, c(1:3)]
+# Dvalengbif <- Dvalengbif [, c(1:3)]
+# 
+# todo <- rbind (Dbroterigbif,Dinoxgbif,Dhinoxgbif,Dvalengbif)
+# todo$name <- "Dianthus broteri"
+# gbifmap (todo, mapdatabase = "world", region = "Spain")
+# 
+# 
+# #LIMPIEZA DE PUNTOS DUPLICADOS
+# todo_cleaned <- unique(todo)
+# todo_cleaned <- todo_cleaned [,-1]
+# 
+# 
+# #MAPA
+# e <- extent (-10,3.5,35.5,44)
+# coordinates(todo_cleaned) <- ~decimalLongitude+ decimalLatitude
+# crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
+# proj4string (todo_cleaned) <- crs.geo 
+# map <- plot (gmap (e, type = "satellite"))
+# points <- points (Mercator(todo_cleaned), col = "red", pch=20, cex = 1.5)
+# 
+# 
+# # Quitamos los puntos en el mismo km^2
+# r <- raster(todo_cleaned)
+# res(r) <- 0.008333333
+# r <- extend(r, extent(r)+1)
+# cooDbroterigbif <- as.data.frame(gridSample(todo_cleaned, r, n=1))
+# 
+# 
+# #===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
+# 
+# e1 <- extent (-7,-6.4,36.8,37.5)
+# 
+# dianthuspops <- read.table ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/DianthusPoints.txt", header = T, sep = ",")
+# dianthuspops <- dianthuspops [,-c(1,4)]
+# dianthuspops <- dianthuspops [,c(2,1)]
+# colnames (dianthuspops) <- c("long", "lat")
+# 
+# coordinates(dianthuspops) <- ~long+ lat
+# proj4string(dianthuspops) <- crs.geo
+# r1 <- raster(dianthuspops)
+# res(r1) <- 0.008333333
+# r1 <- extend(r1, extent(r1)+1)
+# dianthuspops_fran <- as.data.frame(gridSample(dianthuspops, r1, n=1))
+# 
+# coordinates(dianthuspops_fran) <- ~long+ lat
+# proj4string(dianthuspops_fran) <- crs.geo
+# plot(gmap(e1, type = "satellite"))
+# points(Mercator(dianthuspops_fran), col="red" , pch=20, cex=1)
+# 
+# 
+# #===============PUNTOS EN DOÑANA (4x y 12x) DE FRAN===========#
+# 
+# dianthuspops_fran <- as.data.frame (dianthuspops_fran)
+# colnames(cooDbroterigbif) <- colnames(dianthuspops_fran)
+# cooDbroterigbif.def <- rbind (cooDbroterigbif, dianthuspops_fran)
+# cooDbroterigbif.def2 <- cooDbroterigbif.def
+# 
+# coordinates(cooDbroterigbif.def2) <- ~long+ lat
+# proj4string (cooDbroterigbif.def2) <- crs.geo 
+# 
+# r <- raster(cooDbroterigbif.def2)
+# res(r) <- 0.008333333
+# r <- extend(r, extent(r)+1)
+# cooDbroterigbif.def.data <- as.data.frame(gridSample(cooDbroterigbif.def2, r, n=1))
+# 
+# cooDbroterigbif.def.data <- cbind (cooDbroterigbif.def.data, 1)
+# colnames(cooDbroterigbif.def.data)[3]<-"ploidy"
+# 
+# #Estimacion del nivel de ploidia por la ubicacion geografica (coordenadas)
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38 & cooDbroterigbif.def.data$long > -9.5 & cooDbroterigbif.def.data$lat < 39 & cooDbroterigbif.def.data$long < -8] <- "4x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37 & cooDbroterigbif.def.data$long > -9 & cooDbroterigbif.def.data$lat < 37.5 & cooDbroterigbif.def.data$long < -7.5] <- "2x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.9 & cooDbroterigbif.def.data$long > -7.4 & cooDbroterigbif.def.data$lat < 37.6 & cooDbroterigbif.def.data$long < -6] <- "12x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36 & cooDbroterigbif.def.data$long > -6.3 & cooDbroterigbif.def.data$lat < 37.14 & cooDbroterigbif.def.data$long < -4.72] <- "4x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 36.5 & cooDbroterigbif.def.data$long > -4.7 & cooDbroterigbif.def.data$lat < 38.1 & cooDbroterigbif.def.data$long < -1.67] <- "2x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 37.3 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 38.3 & cooDbroterigbif.def.data$long < -0.5] <- "6x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.2 & cooDbroterigbif.def.data$long > -2.33 & cooDbroterigbif.def.data$lat < 38.83 & cooDbroterigbif.def.data$long < 0.33] <- "6x"
+# cooDbroterigbif.def.data$ploidy[cooDbroterigbif.def.data$lat > 38.83 & cooDbroterigbif.def.data$long > -1.7 & cooDbroterigbif.def.data$lat < 40.9 & cooDbroterigbif.def.data$long < 0.38] <- "4x"
+# cooDbroterigbif.def.data$ploidy[c(58,62:63,120:123,125:130)]<- "4x"
+# cooDbroterigbif.def.data <- cooDbroterigbif.def.data[cooDbroterigbif.def.data$ploidy!="1",]
+# 
+# 
+# ploidy<-factor(cooDbroterigbif.def.data$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
+# 
+# coordinates(cooDbroterigbif.def.data) <- ~long+ lat
+# proj4string(cooDbroterigbif.def.data) <- crs.geo
+# plot(gmap(e, type = "satellite"))
+# points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
+# 
+# plot(gmap(e1, type = "satellite"))
+# points(Mercator(cooDbroterigbif.def.data), col=ploidy, pch=20, cex=1)
+# 
+# 
+# cooDbroterigbif.def.vars <- as.data.frame (cooDbroterigbif.def.data)
+# cooDbroterigbif.def.vars <- cooDbroterigbif.def.vars [,c(3,1,2)]
+# coordinates(cooDbroterigbif.def.vars) <- ~long+ lat
+# proj4string(cooDbroterigbif.def.vars) <- crs.geo
 
 
 #carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
 #extraccion de datos de las variables predictoras en las poblaciones
 
+cooDbroterigbif.def.vars <- read.csv2 ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/resultados_analisis/occurrences_ploidy_gbif.csv")
+ploidy<-factor(cooDbroterigbif.def.vars$ploidy,levels = c("2x","4x","6x","12x"),ordered = TRUE)
+
+crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
+coordinates(cooDbroterigbif.def.vars) <- ~long+ lat
+proj4string(cooDbroterigbif.def.vars) <- crs.geo
+
 e <- extent (-10,3,35,42)
 
-chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/chelsa", pattern = ".tif", full.names = TRUE))
+chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
 che.c <- crop (chelsa,e)
 
-enviremfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/envirem", pattern = ".bil", full.names = TRUE))
+enviremfiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/envirem", pattern = ".bil", full.names = TRUE))
 envirem <- stack (enviremfiles)
 env.c <- crop (envirem, e)
 
-alt15files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_15", pattern = ".bil", full.names = TRUE))
-alt16files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/altitud_16", pattern = ".bil", full.names = TRUE))
+alt15files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/altitud_15", pattern = ".bil", full.names = TRUE))
+alt16files <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/altitud_16", pattern = ".bil", full.names = TRUE))
 alt15 <- stack (alt15files)
 alt16 <- stack (alt16files)
 alt.m <- merge (alt15, alt16, ext=e)
@@ -157,7 +164,7 @@ alt.m <- merge (alt15, alt16, ext=e)
 variables <- stack (che.c, env.c, alt.m)
 names (variables) <- c("bio1","bio2","bio3","bio4","bio5","bio6","bio7","bio8","bio9","bio10","bio11","bio12","bio13","bio14","bio15","bio16","bio17","bio18","bio19","annualPET","aridityIndexThornthwaite","climaticMoistureIndex","continentality","embergerQ","growingDegDays0","growingDegDays5","maxTempColdest","minTempWarmest","monthCountByTemp10","PETColdestQuarter","PETDriestQuarter","PETseasonality","PETWarmestQuarter","PETWettestQuarter","thermicityIndex","topoWet","tri","elevation")
 
-soilgrids<-extract.list(cooDbroterigbif.def.vars, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+soilgrids<-extract.list(cooDbroterigbif.def.vars, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas", ID = "ploidy")
 colnames (soilgrids) <- c("ploidy","AWCh1","AWCh2","AWCh3","BLDFIE","CECSOL","ORCDRC","PHIHOX","SNDPPT","TEXMHT")
 soilgrids$ploidy<-factor(soilgrids$ploidy, levels = c("2x", "4x", "6x", "12x"), ordered = TRUE)
 soilgrids$TEXMHT<-replace(soilgrids$TEXMHT,soilgrids$TEXMHT=="1","clay")
@@ -271,7 +278,7 @@ proj4string(backcoord_sel) <- crs.geo
 
 # Extraccion de variables para el background y modificacion de la tabla
 backgroundclim <- extract(variables,backcoord_sel)
-backgroundsoil <- extract.list(backcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2017_nicho/soilgrids/capas", ID = "ploidy")
+backgroundsoil <- extract.list(backcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas", ID = "ploidy")
 backgrounddat <- cbind("background",as.data.frame(backcoord_sel),backgroundclim, backgroundsoil)
 backgrounddat <- backgrounddat[,-42]
 
