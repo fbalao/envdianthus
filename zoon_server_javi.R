@@ -37,7 +37,7 @@ library (future)
 LoadModule('PerformanceMeasures')
 
 vars.stack <- stack("stack_zoon.grd")
-
+plan (multicore)
 
 work <- function(){ workflow (occurrence = LocalOccurrenceData (filename="dbroteri.csv"),
                               covariate  = LocalRaster(vars.stack),
@@ -59,7 +59,7 @@ save(workres, file = 'workflow_javi.RData')
 LoadModule('PerformanceMeasures')
 
 vars.stack.gbif <- stack("stack_zoon_gbif.grd")
-
+plan (multicore)
 
 work1 <- function(){ workflow (occurrence = LocalOccurrenceData (filename="dbroterigbif.csv"),
                               covariate  = LocalRaster(vars.stack.gbif),
