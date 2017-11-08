@@ -48,7 +48,7 @@ proj4string (dbroteri) <- crs.geo
 #carga de variables predictoras y union con mismos limites (chelsa, envirem, altitud, SoilGrids)
 #extraccion de datos de las variables predictoras en las poblaciones
 
-e <- extent (-10,3,35,42)
+e <- extent (-10,4.5,35.5,44)
 
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
