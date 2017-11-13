@@ -145,7 +145,7 @@ crs.geo <- CRS ("+proj=longlat +ellps=WGS84 +datum=WGS84")
 coordinates(cooDbroterigbif.def.vars) <- ~long+ lat
 proj4string(cooDbroterigbif.def.vars) <- crs.geo
 
-e <- extent (-10,3,35,42)
+e <- extent (-10,4.5,35.5,44)
 
 chelsafiles <- mixedsort (list.files ("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/chelsa", pattern = ".tif", full.names = TRUE))
 chelsa <- stack (chelsafiles)
