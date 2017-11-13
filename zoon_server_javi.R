@@ -1,6 +1,6 @@
 library (zoon)
 library (future)
-library (spatialEco)
+# library (spatialEco)
 
 #==================POPULATIONS=====================#
 
