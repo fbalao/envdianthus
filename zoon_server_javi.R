@@ -48,8 +48,7 @@ work <- function(){ workflow (occurrence = LocalOccurrenceData (filename="dbrote
                               process = Chain(StandardiseCov,
                                               Crossvalidate),
                               model = MaxNet,
-                              output = PrintMap 
-                              (dir="/home/javlopez"),
+                              output = PrintMap (dir = "/home/javlopez", size = c (600,600)),
                               forceReproducible = TRUE)}
 
 workres<-work()
@@ -72,11 +71,19 @@ work1 <- function(){ workflow (occurrence = LocalOccurrenceData (filename = "dbr
                               process = Chain(StandardiseCov,
                                               Crossvalidate),
                               model = MaxNet,
-                              output = PrintMap 
-                              (dir = "/home/javlopez"),
+                              output = PrintMap (dir = "/home/javlopez", size = c (600,600)),
                               forceReproducible = TRUE)}
 
 workres1 <- work1()
-save (workres1, file = 'workflow_javi_gbif.RData')
+save (workres1, file = 'workflow_javi_gbif2.RData')
 
 #==================GBIF=====================#
+
+LoadModule ('ChangeWorkflow')
+
+ChangeWorkflow (workres, occurrence = NULL,
+                covariate = NULL,
+                process = NULL,
+                model = NULL,
+                output = PrintMap (dir = "/home/javlopez", size = c (600,600), points = T),
+                forceReproducible = NULL)
