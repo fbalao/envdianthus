@@ -64,7 +64,7 @@ LoadModule('PerformanceMeasures')
 vars.stack.gbif <- stack("stack_zoon_gbif.grd")
 plan (multicore)
 
-work1 <- function(){ workflow (occurrence = LocalOccurrenceData (filename = "dbroterigbif2.csv",
+work1 <- function(){ workflow (occurrence = LocalOccurrenceData (filename = "dbroterigbif.csv",
                                                                  occurrenceType='presence/absence',
                                                                  columns=c(long = 'longitude', lat = 'latitude', value = 'value', type = 'type')),
                               covariate  = LocalRaster(vars.stack.gbif),
