@@ -1,5 +1,6 @@
 library (zoon)
 library (future)
+library (ulimit)
 # library (spatialEco)
 
 #==================POPULATIONS=====================#
@@ -60,30 +61,37 @@ save(workres, file = 'workflow_javi.RData')
 #==================GBIF=====================#
 
 LoadModule('PerformanceMeasures')
+LoadModule('ROCcurve')
 
 vars.stack.gbif <- stack("stack_zoon_gbif.grd")
 plan (multicore)
+ulimit::memory_limit(100000)
 
-work1 <- function(){ workflow (occurrence = LocalOccurrenceData (filename = "dbroterigbif.csv",
-                                                                 occurrenceType='presence/absence',
-                                                                 columns=c(long = 'longitude', lat = 'latitude', value = 'value', type = 'type')),
+workgbif <- function(){ workflow (occurrence = LocalOccurrenceData 
+                               (filename = "dbroterigbif.csv",
+                                occurrenceType='presence',
+                                columns=c(long = 'longitude', lat = 'latitude', 
+                                          value = 'value', type = 'type', fold = 'fold')),
                               covariate  = LocalRaster(vars.stack.gbif),
-                              process = Chain(StandardiseCov,
-                                              Crossvalidate),
+                              process = Chain (Background (n = 10000, bias = 100), 
+                                               StandardiseCov),
                               model = MaxNet,
-                              output = PrintMap (dir = "/home/javlopez", size = c (600,600)),
+                              output = Chain (PrintMap (dir = "/home/javlopez", 
+                                                 size = c (600,600)),
+                                              PerformanceMeasures, ROCcurve (newwin = FALSE)),
                               forceReproducible = TRUE)}
 
-workres1 <- work1()
-save (workres1, file = 'workflow_javi_gbif2.RData')
+workresgbif <- workgbif()
+save (workresgbif, file = 'workflow_gbif.RData')
 
 #==================GBIF=====================#
 
 LoadModule ('ChangeWorkflow')
 
-ChangeWorkflow (workres, occurrence = NULL,
+ChangeWorkflow (workres4, occurrence = NULL,
                 covariate = NULL,
                 process = NULL,
                 model = NULL,
-                output = PrintMap (dir = "/home/javlopez", size = c (600,600), points = T),
+                output = PrintMap (dir = "/home/javlopez", 
+                          size = c (600,600), points = T),
                 forceReproducible = NULL)
