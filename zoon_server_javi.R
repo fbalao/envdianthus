@@ -67,22 +67,20 @@ vars.stack.gbif <- stack("stack_zoon_gbif.grd")
 plan (multicore)
 ulimit::memory_limit(100000)
 
-workgbif <- function(){ workflow (occurrence = LocalOccurrenceData 
-                               (filename = "dbroterigbif.csv",
-                                occurrenceType='presence',
-                                columns=c(long = 'longitude', lat = 'latitude', 
-                                          value = 'value', type = 'type', fold = 'fold')),
+workgbif <- function(){ workflow (occurrence = Chain (LocalOccurrenceData 
+                               (filename = "dbroterigbif.csv"), LocalOccurrenceData 
+                               (filename = "externalvalidation.csv", externalValidation = TRUE)),
                               covariate  = LocalRaster(vars.stack.gbif),
-                              process = Chain (Background (n = 10000, bias = 100), 
+                              process = Chain (Background (n = 10000, bias = 100, seed = 999999), 
                                                StandardiseCov),
                               model = MaxNet,
                               output = Chain (PrintMap (dir = "/home/javlopez", 
-                                                 size = c (600,600)),
+                                                        size = c (600,600)),
                                               PerformanceMeasures, ROCcurve (newwin = FALSE)),
                               forceReproducible = TRUE)}
 
 workresgbif <- workgbif()
-save (workresgbif, file = 'workflow_gbif.RData')
+save (output, file = 'workflow_gbif_nooutput.RData')
 
 #==================GBIF=====================#
 
@@ -91,7 +89,11 @@ LoadModule ('ChangeWorkflow')
 ChangeWorkflow (workres4, occurrence = NULL,
                 covariate = NULL,
                 process = NULL,
-                model = NULL,
-                output = PrintMap (dir = "/home/javlopez", 
-                          size = c (600,600), points = T),
-                forceReproducible = NULL)
+                model = MaxNet,
+                output = Chain (PrintMap (dir = "/home/javlopez", 
+                                          size = c (600,600)),
+                                PerformanceMeasures, ROCcurve (newwin = FALSE)),
+                forceReproducible = TRUE)
+
+LocalOccurrenceData (filename = "dbroterigbif.csv", occurrenceType='presence', columns=c(long = 'longitude', lat = 'latitude', 
+            value = 'value', type = 'type', fold = 'fold'), externalValidation = TRUE)
