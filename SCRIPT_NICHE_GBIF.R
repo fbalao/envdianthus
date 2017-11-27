@@ -161,8 +161,8 @@ alt15 <- stack (alt15files)
 alt16 <- stack (alt16files)
 alt.m <- merge (alt15, alt16, ext=e)
 
-variables <- stack (che.c, env.c)
-names (variables) <- c("bio1","bio2","bio3","bio4","bio5","bio6","bio7","bio8","bio9","bio10","bio11","bio12","bio13","bio14","bio15","bio16","bio17","bio18","bio19","annualPET","climaticMoistureIndex","continentality","growingDegDays5","maxTempColdest","minTempWarmest","PETColdestQuarter","PETDriestQuarter","PETseasonality","PETWarmestQuarter","PETWettestQuarter","topoWet")
+variables <- stack (che.c, env.c, alt.m)
+names (variables) <- c("bio1","bio2","bio3","bio4","bio5","bio6","bio7","bio8","bio9","bio10","bio11","bio12","bio13","bio14","bio15","bio16","bio17","bio18","bio19","annualPET","climaticMoistureIndex","continentality","growingDegDays5","maxTempColdest","minTempWarmest","PETColdestQuarter","PETDriestQuarter","PETseasonality","PETWarmestQuarter","PETWettestQuarter","topoWet", "elevation")
 
 soilgrids<-extract.list(cooDbroterigbif.def.vars, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas", ID = "ploidy")
 colnames (soilgrids) <- c("ploidy","AWCh2","BLDFIE","CECSOL","ORCDRC","PHIHOX","SNDPPT")
@@ -188,7 +188,7 @@ colnames(soilgrids)[2]<-"AWC"
 presvals <- extract (variables, cooDbroterigbif.def.vars)
 presvals <- cbind (ploidy, presvals, soilgrids) 
 presvals$PHIHOX <- presvals$PHIHOX/10
-presvals <- presvals [,-33]
+presvals <- presvals [,-34]
 
 #calculo del tri a partir de altitud con libreria spatialEco
 
@@ -199,7 +199,7 @@ trivalues<-extract(tri.ext,cooDbroterigbif.def.vars)
 
 #sustitucion de los valores tri por los del dataframe con NAs
 presvals <- cbind (presvals, trivalues)
-presvals <- presvals[,c(1:31,39,32:38)]
+presvals <- presvals[,c(1:31,40,32:39)]
 colnames(presvals)[32] <- "tri"
 presvals2 <- na.omit (presvals)
 ploidy <- as.data.frame(presvals2[,1])
@@ -250,10 +250,10 @@ proj4string(backgroundcoord) <- crs.geo
 
 mask <- raster(backgroundcoord)
 res(mask) <- 0.008333333
-x <- circles(backgroundcoord, d=100000, lonlat=TRUE)
+x <- circles(backgroundcoord, d=150000, lonlat=TRUE)
 #Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 5000, type='random', iter=25)
+samp <- spsample(pol, 10000, type='random', iter=25)
 extent(mask) <- extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -278,19 +278,18 @@ proj4string(backcoord_sel) <- crs.geo
 backgroundclim <- extract(variables,backcoord_sel)
 backgroundsoil <- extract.list(backcoord_sel, list.files("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas"),path = "D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/soilgrids/capas", ID = "ploidy")
 backgrounddat <- cbind("background",as.data.frame(backcoord_sel),backgroundclim, backgroundsoil)
-backgrounddat <- backgrounddat[,-35]
+backgrounddat <- backgrounddat[,-36]
 
 coordinates(backgrounddat) <- ~long+ lat
 proj4string(backgrounddat) <- crs.geo
 trivalues1 <- extract(tri.ext,backgrounddat)
 backgrounddat <- as.data.frame(backgrounddat)
 backgrounddat <- cbind (backgrounddat, trivalues1)
-backgrounddat <- backgrounddat[,c(1:33,41,34:40)]
+backgrounddat <- backgrounddat[,c(1:33,42,34:41)]
 colnames(backgrounddat)[34] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
 
 backgrounddat.c <- na.omit(backgrounddat)
-colnames(backgrounddat.c)[36] <- "AWC"
-backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:41)]
+backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:42)]
 colnames(backgrounddat.c) <- colnames(presvalsdata)
 
 # Representacion de los puntos en el mapa alrededor de los de presencia
@@ -318,7 +317,7 @@ gcol = c("blue", "red", "green", "purple", "black")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1, clab.col = 0.5)
 s.class(pcaback$li, todoploidy, col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
-legend (4.5,-3,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
+legend (8.5,-3,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
 
 
 #===============ECOSPAT=============#

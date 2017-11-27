@@ -154,10 +154,10 @@ proj4string(backgroundcoord) <- crs.geo
 
 mask <- raster(backgroundcoord)
 res(mask) <- 0.008333333
-x <- circles(backgroundcoord, d=100000, lonlat=TRUE)
+x <- circles(backgroundcoord, d=150000, lonlat=TRUE)
 #Se podria hacer un clip de los poligonos y el continente para que no salgan puntos en el mar, solucion provisional aumentar el N
 pol <- gUnaryUnion(x@polygons)
-samp <- spsample(pol, 5000, type='random', iter=25)
+samp <- spsample(pol, 10000, type='random', iter=25)
 extent(mask) <- extent(pol) # Sirve para que las submuestras de los poligonos salgan en el extent de la muestra
 cells <- cellFromXY(mask, samp)
 length(cells)
@@ -193,7 +193,6 @@ backgrounddat <- backgrounddat[,c(1:33,41,34:40)]
 colnames(backgrounddat)[34] <- "tri" # Sustitucion de los valores tri por los del dataframe con NAs
 
 backgrounddat.c <- na.omit(backgrounddat)
-colnames(backgrounddat.c)[36] <- "AWC"
 backgrounddat.c <- backgrounddat.c[,c(2,3,1,4:41)]
 colnames(backgrounddat.c) <- colnames(presvalsdata)
 
@@ -226,7 +225,7 @@ gcol = c("blue", "red", "green", "purple", "black")
 s.label(pcaback$li, clabel = 0.1)
 scatter(pcaback, clab.row = 0, posieig = "none", cex=0.1, clab.col = 0.5)
 s.class(pcaback$li, todoploidy, col = gcol, add.plot = TRUE, cstar = 0, clabel = 0, cellipse = 1.5, pch = 16)
-legend (3,-2,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
+legend (-12,2,c("2x", "4x", "6x", "12x","Background"), col = gcol, pch =19, text.width = 1.8, y.intersp = 0.5, cex = 0.8)
 
 
 #===============ECOSPAT=============#

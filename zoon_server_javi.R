@@ -37,14 +37,14 @@ projection (tri.ext) <- "+proj=longlat +ellps=WGS84 +datum=WGS84"
 
 combras <- CombineRasters(c(che.c, env.c, soil.c, tri.ext))
 vars.stack <- stack (combras [[1]], combras [[2]], combras [[3]], combras[[4]])
-writeRaster(vars.stack,"stack_zoon_gbif.grd", format="raster")
+writeRaster(vars.stack,"stack_zoon_alllayers.grd", format="raster")
 
 
 # Chain(PrintMap, PerformanceMeasures),
 
 LoadModule('PerformanceMeasures')
 
-vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon_gbif.grd")
+vars.stack <- stack("D:/Copia de seguridad JAVI/UNIVERSIDAD DE SEVILLA/Experimentos Dianthus/Lopez_Juradoetal2018_nicho/stack_zoon_alllayers.grd")
 plan (multicore)
 
 work <- function(){ workflow (occurrence = LocalOccurrenceData (filename="dbroteri.csv",
@@ -89,14 +89,11 @@ save (output, file = 'workflow_gbif_nooutput.RData')
 
 LoadModule ('ChangeWorkflow')
 
-ChangeWorkflow (workres4, occurrence = NULL,
+ChangeWorkflow (workresgbif, occurrence = NULL,
                 covariate = NULL,
                 process = NULL,
-                model = MaxNet,
-                output = Chain (PrintMap (dir = "/home/javlopez", 
-                                          size = c (600,600)),
-                                PerformanceMeasures, ROCcurve (newwin = FALSE)),
-                forceReproducible = TRUE)
+                model = NULL,
+                output = DataSummary)
 
 LocalOccurrenceData (filename = "dbroterigbif.csv", occurrenceType='presence', columns=c(long = 'longitude', lat = 'latitude', 
             value = 'value', type = 'type', fold = 'fold'), externalValidation = TRUE)
