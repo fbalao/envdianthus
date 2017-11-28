@@ -256,12 +256,12 @@ ecospat.plot.niche.dyn (zdi, zte, quant = 0.75)
 
 
 #EQUIVALENCY TEST
-equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower", ncores = 23 )
-equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower", ncores = 23 )
-equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower", ncores = 23 )
-equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower", ncores = 23 )
-equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower", ncores = 23 )
-equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower", ncores = 23 )
+equivalency.test.dite<-ecospat.niche.equivalency.test (zdi, zte, 100, alternative = "lower")
+equivalency.test.dihe<-ecospat.niche.equivalency.test (zdi, zhe, 100, alternative = "lower")
+equivalency.test.dido<-ecospat.niche.equivalency.test (zdi, zdo, 100, alternative = "lower")
+equivalency.test.tehe<-ecospat.niche.equivalency.test (zte, zhe, 100, alternative = "lower")
+equivalency.test.tedo<-ecospat.niche.equivalency.test (zte, zdo, 100, alternative = "lower")
+equivalency.test.hedo<-ecospat.niche.equivalency.test (zhe, zdo, 100, alternative = "lower")
 
 
 #OVERLAP TEST
